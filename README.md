@@ -26,66 +26,87 @@ $ curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh
 
 Inspect that you have the script, then run with `sudo`:
 
-  $ vim nodesource_setup.sh
-  $ sudo bash nodesource_setup.sh
+```shell
+$ vim nodesource_setup.sh
+$ sudo bash nodesource_setup.sh
+```
 
 Now install Nodejs:
 
-  $ sudo apt-get install nodejs
+```shell
+$ sudo apt-get install nodejs
+```
 
 The nodejs package contains the nodejs binary as well as npm, so you don't need to install npm separately. However, in order for some npm packages to work (such as those that require compiling code from source), you will need to install the build-essential package:
 
-  $ sudo apt-get install build-essential
+```shell
+$ sudo apt-get install build-essential
+```
 
 ## Install Vue-CLI
 
 Change directory to the directory where you want this example project to reside:
 
-  # an example folder will be created here on the next step...
-  $ cd ~
+```shell
+# an example folder will be created here on the next step...
+$ cd ~
+``` 
   
 Install Vue-cli with webpack:
 
-
-  $ sudo npm install -g vue-cli
-  $ vue init webpack example-vue-project
+```shell
+$ sudo npm install -g vue-cli
+$ vue init webpack example-vue-project
+```
 
 You'll get some output like this:
 
-  ? Project name: example-vue-project
-  ? Project description: A Vue.js project
-  ? Author: Your Name <your-name@email.com>
-  ? Vue comes in two build versions, which do you want to use? Standalone
-  ? Use ESLint to lint your code? Y
-  ? Pick an ESLint preset (Feross/Standard or AirBnB or none) none # we'll use a vue specific preset based on Standard
-  ? Setup unit tests with Karma + Mocha? Y
-  ? Setup e2e tests with Nightwatch? Y
+```
+? Project name: example-vue-project
+? Project description: A Vue.js project
+? Author: Your Name <your-name@email.com>
+? Vue comes in two build versions, which do you want to use? Standalone
+? Use ESLint to lint your code? Y
+? Pick an ESLint preset (Feross/Standard or AirBnB or none) none # we'll use a vue specific preset based on Standard
+? Setup unit tests with Karma + Mocha? Y
+? Setup e2e tests with Nightwatch? Y
 
-  vue-cli Generated "example-vue-project"
+vue-cli Generated "example-vue-project"
+```
 
 Install dependencies in `package.json`:
 
-  $ cd my-project 
-  $ npm install
+```shell
+$ cd my-project 
+$ npm install
+```
 
 ## Add Dependencies
 
 Install Vuex, Vue Router, and Vue Resource
 
-  $ npm install vuex vue-router vue-resource --save
-  
+```shell
+$ npm install vuex vue-router vue-resource --save
+``` 
+
 Install jQuery, Bootstrap and Font-Awesome
 
-  $ npm install jquery bootstrap-sass font-awesome --save-dev
+```shell
+$ npm install jquery bootstrap-sass font-awesome --save-dev
+```
 
 Install Vue ESLint plugin
 
-  $ npm install eslint-config-vue eslint-plugin-vue --save-dev
+```shell
+$ npm install eslint-config-vue eslint-plugin-vue --save-dev
+```
 
  Install sass builders:
+
+```shell
+$ npm install sass-loader node-sass --save-dev
+```
  
-  npm install sass-loader node-sass --save-dev
-  
  *(This concludes all extra dependencies, however feel free to check the `package.json` in the Github repo)*
 
 ## Configure JQuery
@@ -94,29 +115,35 @@ Install Vue ESLint plugin
 
 Add the [ProvidePlugin](https://webpack.github.io/docs/list-of-plugins.html#provideplugin) to the plugins array in both `build/webpack.dev.conf.js` and `build/webpack.prod.conf.js` so that jQuery becomes globally available to all your modules:
 
-    plugins: [
-
-      // ...
-
-      new webpack.ProvidePlugin({
-        $: 'jquery',
-        jquery: 'jquery',
-        'window.jQuery': 'jquery',
-        jQuery: 'jquery'
-      })
-    ]
+```js
+  plugins: [
+    
+    // ...
+      
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jquery: 'jquery',
+      'window.jQuery': 'jquery',
+      jQuery: 'jquery'
+    })
+  ]
+```
 
 #### Option #2: Use Expose Loader module for webpack
 
 Alternatively you can add the [Expose Loader](https://www.npmjs.com/package/expose-loader)  package:
 
-    npm install expose-loader --save-dev
+```shell
+npm install expose-loader --save-dev
+```
 
 Use in your entry point `main.js` like this:
 
-    import 'expose?$!expose?jQuery!jquery'
+```shell
+import 'expose?$!expose?jQuery!jquery'
 
-    // ...
+// ...
+```
 
 ## Configure Sublime Text 3
 
@@ -165,23 +192,25 @@ For example, here's how you can install the **Oceanic Next** theme:
 
 #### /eslintrc.js
 
-  module.exports = {
-    root: true,
-    parser: 'babel-eslint',
-    parserOptions: {
-      sourceType: 'module'
-    },
-    extends: 'vue',
-    // required to lint *.vue files
-    plugins: [
-      'html'
-    ],
-    // add your custom rules here
-    'rules': {
-      // allow debugger during development
-      'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0
-    }
+```js
+module.exports = {
+  root: true,
+  parser: 'babel-eslint',
+  parserOptions: {
+    sourceType: 'module'
+  },
+  extends: 'vue',
+  // required to lint *.vue files
+  plugins: [
+    'html'
+  ],
+  // add your custom rules here
+  'rules': {
+    // allow debugger during development
+    'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0
   }
+}
+```
 
 ## Setup Main and Routes
 
@@ -246,7 +275,9 @@ export default router
 
 Create a folder called `store` in the `src` directory:
 
-  $ mkdir store
+```shell
+$ mkdir store
+``` 
   
 Now let's create the following files that will comprise our central Vuex storage.
 
@@ -356,79 +387,80 @@ Now let's add our auth script:
 
 #### /src/auth.js
 
-  const LOGIN_URL = 'http://localhost:8080/auth'
-  
-  var vue
-  
-  class Auth {
-  
-    constructor (options) {
-      vue = options.vue
-      this.isLoggedIn = vue.$store.state.auth.isLoggedIn
-      this.accessToken = vue.$store.state.auth.accessToken
-    }
-  
-    login (creds, redirect) {
-      var request = this.buildLoginRequest(creds.username, creds.password)
-  
-      var auth = vue.$store.state.auth
-      console.log(request.body)
-      return vue.$http
-        .post(LOGIN_URL, request.body, request.options)
-        .then((response) => {
-          auth.accessToken = response.body.access_token
-          // auth.refreshToken = response.body.refresh_token
-          auth.isLoggedIn = true
-          vue.$store.commit('updateAuth', auth)
-  
-          if (redirect) {
-            vue.$router.push(redirect)
-          }
-        })
-        .catch((error) => {
-          vue.error = error
-        })
-    }
-  
-    signup (creds, redirect) {
-      // TODO
-    }
-  
-    logout () {
-      var auth = vue.$store.state.auth
-  
-      auth.accessToken = null
-      auth.isLoggedIn = false
-      vue.$store.commit('updateAuth', auth)
-      vue.$router.push('/login')
-    }
-  
-    buildLoginRequest (username, password) {
-      return {
-        options: {
-          headers: {
-            'Content-type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + 'ZGVtb2FwcDpkZW1vcGFzcw=='  // <-- Base64(client_id:client_secret) "demoapp:demopass"
-          },
-          emulateJSON: true
-        },
-        body: {
-          'grant_type': 'password',
-          'username': username,
-          'password': password
+```js
+const LOGIN_URL = 'http://localhost:8080/auth'
+
+var vue
+
+class Auth {
+
+  constructor (options) {
+    vue = options.vue
+    this.isLoggedIn = vue.$store.state.auth.isLoggedIn
+    this.accessToken = vue.$store.state.auth.accessToken
+  }
+
+  login (creds, redirect) {
+    var request = this.buildLoginRequest(creds.username, creds.password)
+
+    var auth = vue.$store.state.auth
+    console.log(request.body)
+    return vue.$http
+      .post(LOGIN_URL, request.body, request.options)
+      .then((response) => {
+        auth.accessToken = response.body.access_token
+        // auth.refreshToken = response.body.refresh_token
+        auth.isLoggedIn = true
+        vue.$store.commit('updateAuth', auth)
+
+        if (redirect) {
+          vue.$router.push(redirect)
         }
-      }
-    }
-  
-    getAuthHeader () {
-      return {
-        'Authorization': 'Bearer ' + vue.$store.state.auth.accessToken
+      })
+      .catch((error) => {
+        vue.error = error
+      })
+  }
+
+  signup (creds, redirect) {
+    // TODO
+  }
+
+  logout () {
+    var auth = vue.$store.state.auth
+
+    auth.accessToken = null
+    auth.isLoggedIn = false
+    vue.$store.commit('updateAuth', auth)
+    vue.$router.push('/login')
+  }
+
+  buildLoginRequest (username, password) {
+    return {
+      options: {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Basic ' + 'ZGVtb2FwcDpkZW1vcGFzcw=='  // <-- Base64(client_id:client_secret) "demoapp:demopass"
+        },
+        emulateJSON: true
+      },
+      body: {
+        'grant_type': 'password',
+        'username': username,
+        'password': password
       }
     }
   }
-  
-  export default Auth
 
+  getAuthHeader () {
+    return {
+      'Authorization': 'Bearer ' + vue.$store.state.auth.accessToken
+    }
+  }
+}
+
+export default Auth
+```
 
 ## Proxy Api Calls in Webpack Dev Server
 
@@ -436,66 +468,77 @@ When using Webpack for Hot Reloading, we'll need to tell the webpack dev server 
 
 Notice in `build/dev-server.js` this line:
 
-  // proxy api requests
-  Object.keys(proxyTable).forEach(function (context) {
-    var options = proxyTable[context]
-    if (typeof options === 'string') {
-      options = { target: options }
-    }
-    app.use(proxyMiddleware(context, options))
-  })
+```js
+// proxy api requests
+Object.keys(proxyTable).forEach(function (context) {
+  var options = proxyTable[context]
+  if (typeof options === 'string') {
+    options = { target: options }
+  }
+  app.use(proxyMiddleware(context, options))
+})
+```
   
 In this setup we are using: https://github.com/chimurai/http-proxy-middleware (you can see examples there). So let's add options to our config to make this work:
 
 In `config/index.js`, update the *proxyTable* object to look like this:
 
-  dev:  {
-  
-      // ...
-      
-      proxyTable: {
-        '/auth': {
-          target: 'http://brentertainment.com/oauth2/lockdin/token',  // <-- demo oauth2 server, https://github.com/bshaffer/oauth2-demo-php
-          changeOrigin: true,
-          ws: true,
-          pathRewrite: {
-            '^/auth': ''
-          },
-          router: {
-          }
+```js
+dev:  {
+
+    // ...
+    
+    proxyTable: {
+      '/auth': {
+        target: 'http://brentertainment.com/oauth2/lockdin/token',  // <-- demo oauth2 server, https://github.com/bshaffer/oauth2-demo-php
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          '^/auth': ''
         },
-        '/api': {
-          target: 'http://localhost:8081',  // api server
-          changeOrigin: true,               // needed for virtual hosted sites
-          ws: true,                         // proxy websockets
-          pathRewrite: {
-            '^/api': '/backend-service'     // rewrite path localhost:8080/api to localhost:8081/backend-service
-          },
-          router: {
-            // when request.headers.host == 'dev.localhost:3000',
-            // override target 'http://www.example.org' to 'http://localhost:8000'
-            // 'dev.localhost:3000': 'http://localhost:8000'
-          }
+        router: {
         }
       },
+      '/api': {
+        target: 'http://localhost:8081',  // api server
+        changeOrigin: true,               // needed for virtual hosted sites
+        ws: true,                         // proxy websockets
+        pathRewrite: {
+          '^/api': '/backend-service'     // rewrite path localhost:8080/api to localhost:8081/backend-service
+        },
+        router: {
+          // when request.headers.host == 'dev.localhost:3000',
+          // override target 'http://www.example.org' to 'http://localhost:8000'
+          // 'dev.localhost:3000': 'http://localhost:8000'
+        }
+      }
+    },
+    
+    // ...
+}
+```
       
 ## Components
 
 Delete the `App.vue` file located in /src folder:
 
-  $ rm App.vue      
+```shell
+$ rm App.vue
+```
   
 In the `/src/components` folder create the following vue files (just copy these directly from the repo on Github):
 
-  /src
-    /components
-      - App.vue
-      - AppFooter.vue
-      - AppTitle.vue
-      - Dashboard.vue
-      - Login.vue
-      - Navbar.vue
-      - Signup.vue
+```
+/src
+  /components
+    - App.vue
+    - AppFooter.vue
+    - AppTitle.vue
+    - Dashboard.vue
+    - Login.vue
+    - Navbar.vue
+    - Signup.vue
+```
 
 Take a look through these components and see how they interact with each other.
 
@@ -505,38 +548,44 @@ To configure Bootstrap, add a folder `style` to your `/assets` directory and cre
 
 #### /src/assets/style/_variables.scss
 
-  $bootstrap-sass-asset-helper: true !default;
-  
-  //== Iconography
-  //
-  //## Specify custom location and filename of the included Glyphicons icon font. Useful for those including Bootstrap via Bower.
-  
-  //** Load fonts from this directory.
-  
-  // [converter] If $bootstrap-sass-asset-helper if used, provide path relative to the assets load path.
-  // [converter] This is because some asset helpers, such as Sprockets, do not work with file-relative paths.
-  $icon-font-path: '../../../../node_modules/bootstrap-sass/assets/fonts/bootstrap/';
-  
-  //== Footer
-  $footer-padding-vertical: 60px !default;
-  $footer-height:       260px !default;
+```scss
+$bootstrap-sass-asset-helper: true !default;
+
+//== Iconography
+//
+//## Specify custom location and filename of the included Glyphicons icon font. Useful for those including Bootstrap via Bower.
+
+//** Load fonts from this directory.
+
+// [converter] If $bootstrap-sass-asset-helper if used, provide path relative to the assets load path.
+// [converter] This is because some asset helpers, such as Sprockets, do not work with file-relative paths.
+$icon-font-path: '../../../../node_modules/bootstrap-sass/assets/fonts/bootstrap/';
+
+//== Footer
+$footer-padding-vertical: 60px !default;
+$footer-height:     260px !default;
+```
 
 #### /src/assets/style/bootstrap/_bootstrap.scss
 
-  @import './variables';
-  @import '../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap';
-  @import '../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/theme';
+```scss
+@import './variables';
+@import '../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap';
+@import '../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/theme';
+```
 
 Create another folder called `font-awesome` and add this file:
 
 #### /src/assets/style/font-awesome/_font-awesome.scss
 
-  $fa-font-path:"../../node_modules/font-awesome/fonts";
-  @import "../../../../node_modules/font-awesome/scss/font-awesome";
-  .icon-user {
-    @extend .fa;
-    @extend .fa-user;
-  }
+```scss
+$fa-font-path:"../../node_modules/font-awesome/fonts";
+@import "../../../../node_modules/font-awesome/scss/font-awesome";
+.icon-user {
+  @extend .fa;
+  @extend .fa-user;
+}
+```
 
 Now you are ready to import and use Bootstrap and FontAwesome in your components!
 
@@ -550,10 +599,12 @@ You can read more about static assets here: https://vuejs-templates.github.io/we
 
 Run the dev server:
 
-  cd ~/my-project 
-  npm run dev
+```shell
+$ cd ~/my-project 
+$ npm run dev
+```
 
 Open your browser and visit http://localhost:8080 . You should see something like this:
     
           
-<img src="images/screenshot1.png" width=800" />  
+<img src="images/screenshot1.png" width=800" />
