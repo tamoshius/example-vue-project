@@ -281,7 +281,7 @@ $ mkdir store
   
 Now let's create the following files that will comprise our central Vuex storage.
 
-#### Vuex State
+### Vuex State
 
 Let's setup the state of our central data storage, which will consist of Authentication data and User data. Also, when the app bootstraps, we want to first check in the browser's localStorage and retrieve all of our previously stored data.
 
@@ -304,7 +304,7 @@ if (localStorage.getItem(STORAGE_KEY)) {
 export const state = initialState
 ```
 
-#### Vuex Mutations, Getters, and Actions
+### Vuex Mutations, Getters, and Actions
 
 Now create a file to hold all the methods that will change the state in our Vuex store:
 
@@ -326,7 +326,7 @@ export const user = state => state.user
 
 We'll also go ahead and add an actions file (but leave it empty for this project since we don't need it):
 
-#### /src/store/actions
+#### /src/store/actions.js
 
 ```js
 // Here is where you can put async operations.
@@ -336,7 +336,7 @@ We'll also go ahead and add an actions file (but leave it empty for this project
 
 ```
 
-#### Vuex Plugins
+### Vuex Plugins
 Plugins offer a nice approach to hook into mutations and do things like logging or syncing with another store such as `localStorage` or `websockets`:
 
 #### /src/store/plugins.js
@@ -354,7 +354,7 @@ const localStoragePlugin = store => {
 export default [localStoragePlugin]
 ```
 
-#### Vuex index.js
+### Vuex index.js
 
 And bring it all together in the index.js file:
 
@@ -381,7 +381,7 @@ const store = new Vuex.Store({
 
 export default store
 ```
-#### Auth Script
+### Auth Script
 
 Now let's add our auth script:
 
@@ -607,4 +607,4 @@ $ npm run dev
 Open your browser and visit http://localhost:8080 . You should see something like this:
     
           
-<img src="images/screenshot1.png" width=800" />
+<img src="images/screenshot1.png" width=800" />  
