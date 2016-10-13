@@ -526,7 +526,7 @@ Delete the `App.vue` file located in /src folder:
 $ rm App.vue
 ```
   
-In the `/src/components` folder create the following vue files (just copy these directly from the repo on Github):
+In the `/src/components` folder create the following vue files (just copy these directly from this repo):
 
 ```
 /src
@@ -607,4 +607,4 @@ $ npm run dev
 Open your browser and visit http://localhost:8080 . You should see something like this:
     
           
-<img src="images/screenshot1.png" width=800" />  
+<img src="docs/images/screenshot1.png" width=800" />  
