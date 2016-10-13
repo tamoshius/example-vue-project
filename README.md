@@ -10,8 +10,10 @@
 7. [Setup Main and Routes](#setup-main-and-routes)
 8. [Setup Authentication, User Profile, and Vuex](#setup-authentication-user-profile-and-vuex)
 9. [Proxy Api Calls in Webpack Dev Server](#proxy-api-calls-in-webpack-dev-server)
-10. [Images and Other Assets](#images-and-other-assets)
-10. [Run the Dev Server](#run-the-dev-server)
+10. [Components](#components)
+11. [Bootstrap and FontAwesome](#bootstrap-and-fontawesome)
+12. [Images and Other Assets](#images-and-other-assets)
+13. [Run the Dev Server](#run-the-dev-server)
 
 ## Install Node
 
@@ -542,7 +544,7 @@ In the `/src/components` folder create the following vue files (just copy these 
 
 Take a look through these components and see how they interact with each other.
 
-## Bootstrap & FontAwesome
+## Bootstrap and FontAwesome
 
 To configure Bootstrap, add a folder `style` to your `/assets` directory and create the following sass files:
 
