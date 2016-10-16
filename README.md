@@ -602,7 +602,7 @@ You can read more about static assets here: https://vuejs-templates.github.io/we
 Run the dev server:
 
 ```shell
-$ cd ~/my-project 
+$ cd ~/example-vue-project 
 $ npm run dev
 ```
 
