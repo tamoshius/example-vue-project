@@ -1,5 +1,7 @@
 # VueJS 2.0 Example Project
 
+A Single Page Application (SPA) example. Clone the repo to use right away or read through this tutorial below to get an idea of how to build the project from scratch.
+
 ## Table of Contents
 1. [Install Node](#install-node)
 2. [Install Vue-CLI](#install-vue-cli)
@@ -11,9 +13,11 @@
 8. [Setup Authentication, User Profile, and Vuex](#setup-authentication-user-profile-and-vuex)
 9. [Proxy Api Calls in Webpack Dev Server](#proxy-api-calls-in-webpack-dev-server)
 10. [Components](#components)
-11. [Bootstrap and FontAwesome](#bootstrap-and-fontawesome)
-12. [Images and Other Assets](#images-and-other-assets)
-13. [Run the Dev Server](#run-the-dev-server)
+11. [Twitter Bootstrap Configuration](#twitter-bootstrap-configuration)
+12. [Fonts and Font-Awesome](#fonts-and-font-awesome)
+13. [Images and Other Assets](#images-and-other-assets)
+14. [App.scss](#app-scss)
+15. [Run the Dev Server](#run-the-dev-server)
 
 ## Install Node
 
@@ -91,10 +95,10 @@ Install Vuex, Vue Router, and Vue Resource
 $ npm install vuex vue-router vue-resource --save
 ``` 
 
-Install jQuery, Bootstrap and Font-Awesome
+Install jQuery, Bootstrap, Font-Awesome, and Lodash
 
 ```shell
-$ npm install jquery bootstrap-sass font-awesome --save-dev
+$ npm install jquery bootstrap-sass font-awesome lodash --save-dev
 ```
 
 Install Vue ESLint plugin
@@ -111,11 +115,11 @@ $ npm install sass-loader node-sass --save-dev
  
  *(This concludes all extra dependencies, however feel free to check the `package.json` in the Github repo)*
 
-## Configure JQuery
+## Configure JQuery and Lodash
 
 #### Option #1: Use ProvidePlugin
 
-Add the [ProvidePlugin](https://webpack.github.io/docs/list-of-plugins.html#provideplugin) to the plugins array in both `build/webpack.dev.conf.js` and `build/webpack.prod.conf.js` so that jQuery becomes globally available to all your modules:
+Add the [ProvidePlugin](https://webpack.github.io/docs/list-of-plugins.html#provideplugin) to the plugins array in both `build/webpack.dev.conf.js` and `build/webpack.prod.conf.js` so that jQuery and Lodash become globally available to all your modules:
 
 ```js
   plugins: [
@@ -126,7 +130,8 @@ Add the [ProvidePlugin](https://webpack.github.io/docs/list-of-plugins.html#prov
       $: 'jquery',
       jquery: 'jquery',
       'window.jQuery': 'jquery',
-      jQuery: 'jquery'
+      jQuery: 'jquery',
+      '_': 'lodash'
     })
   ]
 ```
@@ -219,20 +224,25 @@ module.exports = {
 #### src/main.js
 
 ```js
+/* Twitter Bootstrap JS/Sass */
+require('bootstrap-sass')
+
+/* Vue */
 import Vue from 'vue'
 import router from './router'
 import store from './store'
 import VueResource from 'vue-resource'
-import './assets/app.scss'  // <-- create this file and you can put some global styles there
-import App from './components/App.vue'  // <-- or you could just keep your global styles here instead
-
 Vue.use(VueResource)
+
+import './assets/style/app.scss'
+import App from './components/App.vue'
 
 new Vue({
   router,
-  store,  // inject store to all children
+  store,
   render: h => h(App)
 }).$mount('#app')
+
 
 ```
 #### src/routes.js
@@ -544,31 +554,11 @@ In the `/src/components` folder create the following vue files (just copy these 
 
 Take a look through these components and see how they interact with each other.
 
-## Bootstrap and FontAwesome
+## Twitter Bootstrap Configuration
 
 To configure Bootstrap, add a folder `style` to your `/assets` directory and create the following sass files:
 
-#### /src/assets/style/_variables.scss
-
-```scss
-$bootstrap-sass-asset-helper: true !default;
-
-//== Iconography
-//
-//## Specify custom location and filename of the included Glyphicons icon font. Useful for those including Bootstrap via Bower.
-
-//** Load fonts from this directory.
-
-// [converter] If $bootstrap-sass-asset-helper if used, provide path relative to the assets load path.
-// [converter] This is because some asset helpers, such as Sprockets, do not work with file-relative paths.
-$icon-font-path: '../../../../node_modules/bootstrap-sass/assets/fonts/bootstrap/';
-
-//== Footer
-$footer-padding-vertical: 60px !default;
-$footer-height:     260px !default;
-```
-
-#### /src/assets/style/bootstrap/_bootstrap.scss
+#### /src/assets/style/_bootstrap.scss
 
 ```scss
 @import './variables';
@@ -576,26 +566,102 @@ $footer-height:     260px !default;
 @import '../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/theme';
 ```
 
-Create another folder called `font-awesome` and add this file:
-
-#### /src/assets/style/font-awesome/_font-awesome.scss
+#### /src/assets/style/_variables.scss
 
 ```scss
-$fa-font-path:"../../node_modules/font-awesome/fonts";
-@import "../../../../node_modules/font-awesome/scss/font-awesome";
-.icon-user {
-  @extend .fa;
-  @extend .fa-user;
-}
+$bootstrap-sass-asset-helper: true !default;
+
+$icon-font-path: '../../../../node_modules/bootstrap-sass/assets/fonts/bootstrap/';
+
+// copy and paste here everything else from the original Bootstrap _variables.scss
+
 ```
 
-Now you are ready to import and use Bootstrap and FontAwesome in your components!
+Take a look at some of the components (ie. `AppTitle` component). You'll see we import this variables file so we can have access to them to use in our component styling.
+
+## Fonts and Font-Awesome
+
+Create a folder `fonts` and add your font files there:
+
+#### /src/assets/fonts
+
+```
+/fonts
+	/lato
+		Lato-Black.eot
+		Lato-Black.ttf
+		Lato-Black.woff
+		Lato-Black.woff2
+		
+		// etc. more fonts
+```
+
+Then back in your style folder, add a `_fonts.scss` stylesheet. We'll setup your fonts and also `font-awesome` here:
+
+#### /src/assets/style/_fonts.scss
+
+```scss
+/* Font Awesome */
+$fa-font-path:"../../../node_modules/font-awesome/fonts";
+@import "../../../node_modules/font-awesome/scss/font-awesome";
+
+/* Webfont: Lato-Black */
+@font-face {
+    font-family: 'LatoWebBlack';
+    src: url('../fonts/lato/Lato-Black.eot'); /* IE9 Compat Modes */
+    src: url('../fonts/lato/Lato-Black.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('../fonts/lato/Lato-Black.woff2') format('woff2'), /* Modern Browsers */
+         url('../fonts/lato/Lato-Black.woff') format('woff'), /* Modern Browsers */
+         url('../fonts/lato/Lato-Black.ttf') format('truetype');
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+```
 
 ## Images and Other Assets
 
 Create an images folder at `src/assets/images` then cut an paste the Vue `logo.png` file that resides in the assets folder by default. The Navbar component uses a relative link to this image, which Webpack will resolve for us automatically.
 
 You can read more about static assets here: https://vuejs-templates.github.io/webpack/static.html
+
+## App scss
+
+Bring everything to together into an `app.scss` file that we import in our main entry:
+
+#### /src/assets/style/app.scss
+
+```
+@import './bootstrap';
+@import './fonts';
+
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  background-color: #F5F5F5;
+  font-family: $font-family-sans-serif;
+  font-size: 16px;
+  color: #000;
+}
+
+/* Input form */
+
+.form-control{
+  box-shadow: none;
+  border: 1px solid #dedede;
+  padding: 6px 20px;
+  height: 50px;
+  background: none;
+  color: #282828;
+  border-radius: 0;
+}
+
+.form-control:focus{
+  box-shadow: none;
+}
+```
+
+Of course if this file gets to big, you can break it up into different supporting files: `_forms.scss`, `_blah-blah.scss`, etc. And import each of them as you do with the bootstrap and font files.
 
 ## Run the Dev Server
 
@@ -609,4 +675,4 @@ $ npm run dev
 Open your browser and visit http://localhost:8080 . You should see something like this:
     
           
-<img src="docs/images/screenshot1.png" width=800" />  
+<img src="docs/images/home-page.png" width=800" />  

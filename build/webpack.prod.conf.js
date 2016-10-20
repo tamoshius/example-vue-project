@@ -82,7 +82,8 @@ var webpackConfig = merge(baseWebpackConfig, {
       $: 'jquery',
       jquery: 'jquery',
       'window.jQuery': 'jquery',
-      jQuery: 'jquery'
+      jQuery: 'jquery',
+      '_': 'lodash'
     })
   ]
 })

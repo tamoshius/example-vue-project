@@ -1,14 +1,18 @@
+/* Twitter Bootstrap JS/Sass */
+require('bootstrap-sass')
+
+/* Vue */
 import Vue from 'vue'
 import router from './router'
 import store from './store'
 import VueResource from 'vue-resource'
-import './assets/app.scss'  // <-- create this file and you can put some global styles there
-import App from './components/App.vue'  // <-- or you could just keep your global styles here instead
-
 Vue.use(VueResource)
+
+import './assets/style/app.scss'
+import App from './components/App.vue'
 
 new Vue({
   router,
-  store,  // inject store to all children
+  store,
   render: h => h(App)
 }).$mount('#app')

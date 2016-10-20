@@ -2,7 +2,10 @@
   <div class="AppTitle">
     <div class="heading">
       <span class="title-icon classic pull-left"><i class="fa" :class="fontawesome"></i></span>
-      <h2 class="title classic">{{ title }}</h2>
+      <h2 class="title" :class="{ noDesc: !titleDesc }">
+        {{ title }}
+        <span class="title-desc">{{ titleDesc }}</span>
+      </h2>
     </div>          
   </div>
 </template>
@@ -12,6 +15,9 @@ export default {
   name: 'AppTitle',
   props: {
     'title': {
+      type: String
+    },
+    'titleDesc': {
       type: String
     },
     'fontawesome': {
@@ -29,12 +35,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/style/bootstrap/bootstrap';
-
-/* Deafult title */
+@import '../assets/style/variables';
 
 .heading{
-  padding-bottom: 50px;
+  padding-bottom: 40px;
   margin-top: 10px;
   -webkit-transition: all 0.3s ease 0s;
   -moz-transition: all 0.3s ease 0s;
@@ -44,10 +48,10 @@ export default {
 }
 
 .title-icon{
-  font-size: 32px;
   margin-right: 15px;
-  margin-top: 9px;
+  margin-top: 0px;
   color: #959595;
+  font-size: 40px;
 }
 
 .title-icon.classic{
@@ -66,20 +70,23 @@ export default {
   -ms-transition: all 0.3s ease 0s;
   -o-transition: all 0.3s ease 0s;
   transition: all 0.3s ease 0s;
+  font-family: 'LatoWebBlack';
+  text-transform: uppercase;
+  font-size: $font-size-h3;
  }
 
- .title.classic{
-  line-height: 40px;
-    height: 34px;
-}
+ .title.noDesc{
+  line-height: 55px;
+ }
 
  .title-desc{
   font-size: 16px;
   line-height: 18px;
-  font-weight: 400;
+  font-weight: normal;
   text-transform: capitalize;
   display: block;
-  color: #6A6A6A
+  color: #6A6A6A;
+  font-family: 'LatoWeb';
  }
 
 </style>

@@ -17,8 +17,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '../assets/style/bootstrap/bootstrap';
-@import '../assets/style/font-awesome/font-awesome';
+@import '../assets/style/variables';
 
 .app-footer {
   padding: $footer-padding-vertical 0px;

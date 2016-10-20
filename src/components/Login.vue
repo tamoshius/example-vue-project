@@ -3,7 +3,7 @@
 
     <app-title fontawesome="fa-lock" title="Login"></app-title>
 
-    <p>Log in to your account to access your dashboard.</p>
+    <p>Use the username: <strong>demouser</strong> password: <strong>testpass</strong></p>
     <div class="alert alert-danger" v-if="error">
       <p>{{ error }}</p>
     </div>
