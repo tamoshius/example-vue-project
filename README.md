@@ -675,4 +675,4 @@ $ npm run dev
 Open your browser and visit http://localhost:8080 . You should see something like this:
     
           
-<img src="docs/images/home-page.png" width=800" />  
+<img src="docs/images/home-page.png" width=1200" />  
