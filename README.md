@@ -1,6 +1,10 @@
 # VueJS 2.0 Example Project
 
-A Single Page Application (SPA) example. Clone the repo to use right away or read through this tutorial below to get an idea of how to build the project from scratch.
+A scalable Single Page Application (SPA) example. This example uses Vue-cli, VueRouter, Vuex, VueResource and more. Clone the repo to use right away or read through this tutorial below to get an idea of how to build the project from scratch.
+
+## Todo
+
+- Make routes load components asynchronously.
 
 ## Table of Contents
 1. [Install Node](#install-node)
