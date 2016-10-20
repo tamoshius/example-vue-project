@@ -577,7 +577,7 @@ $icon-font-path: '../../../../node_modules/bootstrap-sass/assets/fonts/bootstrap
 
 ```
 
-Take a look at some of the components (ie. `AppTitle` component). You'll see we import this variables file so we can have access to them to use in our component styling.
+Take a look at some of the components (ie. `AppTitle` component). You'll see we import these variablese so we can use them in our component styling.
 
 ## Fonts and Font-Awesome
 
@@ -661,7 +661,7 @@ html, body, #app {
 }
 ```
 
-Of course if this file gets to big, you can break it up into different supporting files: `_forms.scss`, `_blah-blah.scss`, etc. And import each of them as you do with the bootstrap and font files.
+Of course if this file gets too big, you can break it up into different supporting files: `_forms.scss`, `_blah-blah.scss`, etc. And import each of them as you do with the bootstrap and font files.
 
 ## Run the Dev Server
 
