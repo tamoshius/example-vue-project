@@ -3,7 +3,6 @@
     <navbar></navbar>
     <div class="app-content">
       <router-view></router-view>
-      <div class="push-footer"></div>
     </div>
     <app-footer></app-footer>
   </div>
