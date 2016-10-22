@@ -2,10 +2,6 @@
 
 A scalable Single Page Application (SPA) example. This example uses Vue-cli, VueRouter, Vuex, VueResource and more. Clone the repo to use right away or read through this tutorial below to get an idea of how to build the project from scratch and setup Sublime Text.
 
-## Todo
-
-- Make routes load components asynchronously.
-
 ## Table of Contents
 1. [Install Node](#install-node)
 2. [Install Vue-CLI](#install-vue-cli)
