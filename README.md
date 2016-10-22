@@ -108,12 +108,18 @@ Install Vue ESLint plugin
 $ npm install eslint-config-vue eslint-plugin-vue --save-dev
 ```
 
+Install babel-polyfill (for example, transpiling es6 promises, so that tests will work in testing browsers...see section on "Unit Testing and End-to-End Testing" further down).
+
+```shell
+npm install babel-polyfill --save-dev 
+```
+
  Install sass builders:
 
 ```shell
 $ npm install sass-loader node-sass --save-dev
 ```
- 
+  
  *(This concludes all extra dependencies, however feel free to check the `package.json` in the Github repo)*
 
 ## Configure JQuery and Lodash
@@ -684,6 +690,12 @@ html, body, #app {
 Of course if this file gets too big, you can break it up into different supporting files: `_forms.scss`, `_blah-blah.scss`, etc. And import each of them as you do with the bootstrap and font files.
 
 ## Unit Testing and End-to-End Testing
+
+Make sure you installed `babel-polyfill` earlier in this tutorial. If you didn't, you can install it with:  
+
+```shell
+npm install babel-polyfill --save-dev 
+```
 
 A unit test is included from the Webpack template already. It's a simple example that tests the content outputted from the Hello vue component:
 
