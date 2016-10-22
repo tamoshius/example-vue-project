@@ -770,7 +770,7 @@ Then the Selenium server will fire up Chrome browser and run the e2e tests to se
  ...  
 OK. 3 assertions passed. (18.522s)  
 
-You can ofcourse run unit tests and e2e tests seperately with: `npm run unit` and `npm run e2e`.
+You can of course run unit tests and e2e tests seperately with: `npm run unit` and `npm run e2e`.
 
 ## Run the Dev Server
 
