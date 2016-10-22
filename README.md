@@ -757,18 +757,18 @@ npm run test
 You should see some output initially showing the results of each unit test ran:
 
 > Hello.vue
-    ✓ should render correct contents
-    ...
+    ✓ should render correct contents  
+    ...  
     PhantomJS 2.1.1 (Linux 0.0.0): Executed 1 of 1 SUCCESS (0.018 secs / 0.004 secs)
-TOTAL: 1 SUCCESS
+TOTAL: 1 SUCCESS  
     
 Then the Selenium server will fire up Chrome browser and run the e2e tests to see if those pass:
 
->  ✔ Element <#app> was visible after 43 milliseconds.
- ✔ Testing if element <.login> is present.
- ✔ Testing if element <.page-title h2> contains text: "MY DASHBOARD".
- ...
-OK. 3 assertions passed. (18.522s)
+>  ✔ Element <#app> was visible after 43 milliseconds.  
+ ✔ Testing if element <.login> is present.  
+ ✔ Testing if element <.page-title h2> contains text: "MY DASHBOARD".  
+ ...  
+OK. 3 assertions passed. (18.522s)  
 
 You can ofcourse run unit tests and e2e tests seperately with: `npm run unit` and `npm run e2e`.
 
