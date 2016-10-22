@@ -1,6 +1,9 @@
 // For authoring Nightwatch tests, see
 // http://nightwatchjs.org/guide#usage
 
+/**
+ * Test that user can login and see dashboard.
+ */
 module.exports = {
   'default e2e tests': function (browser) {
     // automatically uses dev Server port from /config.index.js
@@ -11,9 +14,17 @@ module.exports = {
     browser
       .url(devServer)
       .waitForElementVisible('#app', 5000)
-      .assert.elementPresent('.logo')
-      .assert.containsText('h1', 'Hello Vue!')
-      .assert.elementCount('p', 3)
+
+      // Test that user can see login.
+      .assert.elementPresent('.login')
+      .setValue('.js-login__username', 'demouser')
+      .setValue('.js-login__password', 'testpass')
+      .click('.js-login__submit')
+      .pause(1000)
+
+      // Test that user can see dashboard.
+      .assert.containsText('.page-title h2', 'MY DASHBOARD')
+      .pause(2000)
       .end()
   }
 }

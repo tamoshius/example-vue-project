@@ -1,28 +1,44 @@
 <template>
-  <div class="AppTitle">
-    <div class="heading">
-      <span class="title-icon classic pull-left"><i class="fa" :class="fontawesome"></i></span>
-      <h2 class="title" :class="{ noDesc: !titleDesc }">
-        {{ title }}
-        <span class="title-desc">{{ titleDesc }}</span>
-      </h2>
-    </div>          
+  <div class="page-title">
+       
+        <div class="heading">
+          <span class="title-icon pull-left"><i class="fa" :class="titleIcon" v-if="title"></i></span>
+          <h2 class="title" :class="{ 'no-sub': !subtitle }"  v-if="title">
+            {{ title }}
+            <span class="subtitle">{{ subtitle }}</span>
+          </h2>
+        </div>  
+
   </div>
 </template>
 
 <script>
 export default {
-  name: 'AppTitle',
+  name: 'PageTitle',
   props: {
+
+    /**
+     * Title
+     * @var String
+     */
     'title': {
       type: String
     },
-    'titleDesc': {
+
+    /**
+     * A subtitle/description that appears below the title.
+     * @var String
+     */
+    'subtitle': {
       type: String
     },
-    'fontawesome': {
-      type: String,
-      default: 'fa-question'
+
+    /**
+     * A font-awesome icon class, ie. 'fa-user'
+     * @var {String}
+     */
+    'titleIcon': {
+      type: String
     }
   },
   data () {
@@ -37,8 +53,15 @@ export default {
 <style lang="scss" scoped>
 @import '../assets/style/variables';
 
-.heading{
-  padding-bottom: 40px;
+.page-title {
+  margin-top: -18px;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+.heading {
+  padding-top: 5px;
+  padding-bottom: 10px;
   margin-top: 10px;
   -webkit-transition: all 0.3s ease 0s;
   -moz-transition: all 0.3s ease 0s;
@@ -47,18 +70,14 @@ export default {
   transition: all 0.3s ease 0s;
 }
 
-.title-icon{
+.title-icon {
   margin-right: 15px;
   margin-top: 0px;
   color: #959595;
   font-size: 40px;
 }
 
-.title-icon.classic{
-  margin-top: 0;
-}
-
-.title{
+.title {
   position: relative;
   margin: 0;
   line-height: 32px;
@@ -75,17 +94,17 @@ export default {
   font-size: $font-size-h3;
  }
 
- .title.noDesc{
+ .title.no-sub {
   line-height: 55px;
  }
 
- .title-desc{
+ .subtitle {
   font-size: 16px;
   line-height: 18px;
   font-weight: normal;
   text-transform: capitalize;
   display: block;
-  color: #6A6A6A;
+  color: #7c7c7c;
   font-family: 'LatoWeb';
  }
 

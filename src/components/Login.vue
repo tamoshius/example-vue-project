@@ -1,7 +1,7 @@
 <template>
-  <div class="col-sm-4 col-sm-offset-4">
+  <div class="login col-sm-4 col-sm-offset-4">
 
-    <app-title fontawesome="fa-lock" title="Login"></app-title>
+    <page-title titleIcon="fa-lock" title="Login"></page-title>
 
     <p>Use the username: <strong>demouser</strong> password: <strong>testpass</strong></p>
     <div class="alert alert-danger" v-if="error">
@@ -9,8 +9,9 @@
     </div>
     <div class="form-group">
       <input 
-        type="text" 
-        class="form-control"
+        type="text"
+        data-id="login.username" 
+        class="form-control js-login__username"
         placeholder="Enter your username"
         v-model="credentials.username"
       >
@@ -18,12 +19,18 @@
     <div class="form-group">
       <input
         type="password"
-        class="form-control"
+        class="form-control js-login__password "
         placeholder="Enter your password"
         v-model="credentials.password"
       >
     </div>
-    <button class="btn btn-primary solid blank" @click="submit()">Login &nbsp; <i class="fa fa-arrow-circle-o-right"></i></button>
+    <button 
+      data-id="login.submit"
+      class="btn btn-primary solid blank js-login__submit" 
+      @click="submit()"
+    >
+      Login &nbsp; <i class="fa fa-arrow-circle-o-right"></i>
+    </button>
     <br><br><br>
     <a href="#">Forgot your password?</a><br>
     Don’t have an account? &nbsp;<a href="#">Sign up here.</a>
@@ -33,11 +40,11 @@
 
 <script>
 import Auth from '../auth'
-import AppTitle from './AppTitle.vue'
+import PageTitle from './PageTitle.vue'
 
 export default {
   name: 'login',
-  components: { AppTitle },
+  components: { PageTitle },
   beforeCreate () {
     this.auth = new Auth({ 'vue': this })
   },

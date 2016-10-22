@@ -5,7 +5,6 @@ A scalable Single Page Application (SPA) example. This example uses Vue-cli, Vue
 ## Todo
 
 - Make routes load components asynchronously.
-- Give example of unit testing.
 
 ## Table of Contents
 1. [Install Node](#install-node)
@@ -22,7 +21,8 @@ A scalable Single Page Application (SPA) example. This example uses Vue-cli, Vue
 12. [Fonts and Font-Awesome](#fonts-and-font-awesome)
 13. [Images and Other Assets](#images-and-other-assets)
 14. [App.scss](#app-scss)
-15. [Run the Dev Server](#run-the-dev-server)
+15. [Unit Testing and End-to-End Testing](#unit-testing-and-end-to-end-testing)
+16. [Run the Dev Server](#run-the-dev-server)
 
 ## Install Node
 
@@ -255,18 +255,37 @@ new Vue({
 ```js
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Login from './components/Login.vue'
-import Dashboard from './components/Dashboard.vue'
-import Signup from './components/Signup.vue'
 
 Vue.use(VueRouter)
 
 const router = new VueRouter({
   mode: 'history',
   routes: [
-    { path: '/login', name: 'login', component: Login },
-    { path: '/signup', name: 'signup', component: Signup },
-    { path: '/', name: 'dashboard', component: Dashboard, beforeEnter: guardRoute }
+    // Each of these routes are loaded asynchronously, when a user first navigates to each corresponding endpoint.
+    // The route will load once into memory, the first time it's called, and no more on future calls.
+    // This behavior can be observed on the network tab of your browser dev tools.
+    {
+      path: '/login',
+      name: 'login',
+      component: function (resolve) {
+        require(['./components/Login.vue'], resolve)
+      }
+    },
+    {
+      path: '/signup',
+      name: 'signup',
+      component: function (resolve) {
+        require(['./components/Signup.vue'], resolve)
+      }
+    },
+    {
+      path: '/',
+      name: 'dashboard',
+      component: function (resolve) {
+        require(['./components/Dashboard.vue'], resolve)
+      },
+      beforeEnter: guardRoute
+    }
   ]
 })
 
@@ -667,6 +686,95 @@ html, body, #app {
 ```
 
 Of course if this file gets too big, you can break it up into different supporting files: `_forms.scss`, `_blah-blah.scss`, etc. And import each of them as you do with the bootstrap and font files.
+
+## Unit Testing and End-to-End Testing
+
+A unit test is included from the Webpack template already. It's a simple example that tests the content outputted from the Hello vue component:
+
+#### /test/unit/specs/Hello.spec.js
+
+```js
+import Vue from 'vue'
+import Hello from 'src/components/Hello'
+
+describe('Hello.vue', () => {
+  it('should render correct contents', () => {
+    const vm = new Vue({
+      el: document.createElement('div'),
+      render: (h) => h(Hello)
+    })
+    expect(vm.$el.querySelector('.hello h1').textContent).to.equal('Hello Vue!')
+  })
+})
+```
+
+#### End-to-End Testing with Nightwatch.js and Selenium server
+
+I find End-to-End testing and Integration testing even more beneficial. Vue-cli has put together a nice setup that includes Nightwatch.js (which uses Selenium and a Chrome driver) for e2e testing right out of the box. Let's remove the existing test located at `test/e2e/specs/test.js` since it will no longer work with the changes we have made. Let's add a new test that tests that our login form works and that we can reach the dashboard:
+
+#### /test/e2e/specs/loginTest.js
+
+```js
+// For authoring Nightwatch tests, see
+// http://nightwatchjs.org/guide#usage
+
+/**
+ * Test that user can login and see dashboard.
+ */
+module.exports = {
+  'default e2e tests': function (browser) {
+    // automatically uses dev Server port from /config.index.js
+    // default: http://localhost:8080
+    // see nightwatch.conf.js
+    const devServer = browser.globals.devServerURL
+
+    browser
+      .url(devServer)
+      .waitForElementVisible('#app', 5000)
+
+      // Assert that user can see login.
+      .assert.elementPresent('.login')
+      .setValue('.js-login__username', 'demouser')
+      .setValue('.js-login__password', 'testpass')
+      .click('.js-login__submit')
+      .pause(1000)
+
+      // Assert that user can see dashboard.
+      .assert.containsText('.page-title h2', 'MY DASHBOARD')
+      .pause(2000)
+      .end()
+  }
+}
+
+```
+
+*Note: You may wish to add another `assert` that asserts the dashboard is unreachable when a user is logged out.*
+
+#### Running the Tests
+
+Now let's run both the unit test and the e2e test. Make sure you are in your project directory, then:
+
+```shell
+npm run test
+```
+
+You should see some output initially showing the results of each unit test ran:
+
+> Hello.vue
+    ✓ should render correct contents
+    ...
+    PhantomJS 2.1.1 (Linux 0.0.0): Executed 1 of 1 SUCCESS (0.018 secs / 0.004 secs)
+TOTAL: 1 SUCCESS
+    
+Then the Selenium server will fire up Chrome browser and run the e2e tests to see if those pass:
+
+>  ✔ Element <#app> was visible after 43 milliseconds.
+ ✔ Testing if element <.login> is present.
+ ✔ Testing if element <.page-title h2> contains text: "MY DASHBOARD".
+ ...
+OK. 3 assertions passed. (18.522s)
+
+You can ofcourse run unit tests and e2e tests seperately with: `npm run unit` and `npm run e2e`.
 
 ## Run the Dev Server
 
