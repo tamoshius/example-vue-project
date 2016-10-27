@@ -1,5 +1,5 @@
-# VueJS 2.0 Example Project
-# (and Tutorial)
+# VueJS 2.0 Example Project (and Tutorial)
+
 A scalable Single Page Application (SPA) example. This example uses Vue-cli, VueRouter, Vuex, VueResource and more. Clone the repo, do `npm install`, and use right away or read through this tutorial below to get an idea of how to build the project from scratch and setup Sublime Text.
 
 ## Table of Contents
