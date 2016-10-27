@@ -46,13 +46,10 @@
 </template>
 
 <script>
-import Authenticate from '../auth'
+import Auth from '../auth'
 
 export default {
   name: 'Navbar',
-  beforeCreate () {
-    this.authenticate = new Authenticate({ 'vue': this })
-  },
   data () {
     return {
       auth: this.$store.state.auth
@@ -60,7 +57,7 @@ export default {
   },
   methods: {
     logout () {
-      this.authenticate.logout()
+      Auth.logout()
     }
   }
 }

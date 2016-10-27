@@ -23,6 +23,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/auth': {
+        // TODO: Update to use node express oauth2 server for better example.
         target: 'http://brentertainment.com/oauth2/lockdin/token',  // <-- demo oauth2 server, https://github.com/bshaffer/oauth2-demo-php
         changeOrigin: true,
         ws: true,

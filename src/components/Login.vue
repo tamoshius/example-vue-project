@@ -45,9 +45,6 @@ import PageTitle from './PageTitle.vue'
 export default {
   name: 'login',
   components: { PageTitle },
-  beforeCreate () {
-    this.auth = new Auth({ 'vue': this })
-  },
   data () {
     return {
       credentials: {
@@ -59,11 +56,11 @@ export default {
   },
   methods: {
     submit () {
-      var credentials = {
+      const credentials = {
         username: this.credentials.username,
         password: this.credentials.password
       }
-      this.auth.login(credentials, '/')
+      Auth.login(credentials, '/')
     }
   }
 }

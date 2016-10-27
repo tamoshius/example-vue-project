@@ -1,28 +1,54 @@
-// This is a public oauth test server
+import Vue from 'vue'
 const LOGIN_URL = 'http://localhost:8080/auth'
-
-var vue
+const REFRESH_TOKEN_URL = 'http://localhost:8080'  // <-- TODO: replace with your refresh token oauth2 endpoint
+let vue = {}
 
 class Auth {
 
-  constructor (options) {
-    vue = options.vue
-    this.isLoggedIn = vue.$store.state.auth.isLoggedIn
-    this.accessToken = vue.$store.state.auth.accessToken
+  static initialize () {
+    vue = window.vue
+
+    // Attach the token on every request
+    Vue.http.interceptors.push((request, next) => {
+      const token = vue.$store.state.auth.accessToken
+
+      // Set the Authorization header if user is logged in.
+      if (token && !request.headers.has('Authorization')) {
+        request.headers.set('Authorization', 'Bearer ' + vue.$store.state.auth.accessToken)
+      }
+
+      next()
+    })
+
+    // Attempts to refresh the token
+    Vue.http.interceptors.push((request, next) => {
+      next((response) => {
+        // TODO: check for expired token more specifically, limit retries
+        if (response.status === 401 && response.data.error === 'invalid_token') {
+          return Auth.refreshToken().then((result) => {
+            const token = result.body.access_token
+
+            Auth.storeToken(token)
+            request.headers.set('Authorization', 'Bearer ' + token)
+
+            return Auth.retry(request)
+          }).catch(() => {
+            Auth.logout()
+            return vue.$router.push({ name: 'login' })
+          })
+        }
+      })
+    })
   }
 
-  login (creds, redirect) {
-    var request = this.buildLoginRequest(creds.username, creds.password)
+  static login (creds, redirect) {
+    const request = this.buildLoginRequest(creds.username, creds.password)
 
-    var auth = vue.$store.state.auth
-    console.log(request.body)
     return vue.$http
       .post(LOGIN_URL, request.body, request.options)
       .then((response) => {
-        auth.accessToken = response.body.access_token
-        // auth.refreshToken = response.body.refresh_token
-        auth.isLoggedIn = true
-        vue.$store.commit('updateAuth', auth)
+        Auth.storeToken(response.body.access_token)
+        // need to also store response.body.refresh_token
 
         if (redirect) {
           vue.$router.push(redirect)
@@ -33,20 +59,30 @@ class Auth {
       })
   }
 
-  signup (creds, redirect) {
+  static storeToken (token) {
+    const auth = vue.$store.state.auth
+    const user = vue.$store.state.user
+
+    auth.accessToken = token
+    auth.isLoggedIn = true
+
+    // TODO: get user's name from response from Oauth server
+    user.name = 'John Smith'
+
+    vue.$store.commit('UPDATE_AUTH', auth)
+    vue.$store.commit('UPDATE_USER', user)
+  }
+
+  static signup (creds, redirect) {
     // TODO
   }
 
-  logout () {
-    var auth = vue.$store.state.auth
-
-    auth.accessToken = null
-    auth.isLoggedIn = false
-    vue.$store.commit('updateAuth', auth)
+  static logout () {
+    vue.$store.commit('CLEAR_ALL_DATA')
     vue.$router.push('/login')
   }
 
-  buildLoginRequest (username, password) {
+  static buildLoginRequest (username, password) {
     return {
       options: {
         headers: {
@@ -63,10 +99,17 @@ class Auth {
     }
   }
 
-  getAuthHeader () {
-    return {
-      'Authorization': 'Bearer ' + vue.$store.state.auth.accessToken
-    }
+  static refreshToken () {
+    // TODO: Need to replace with a call to refresh token oauth2 endpoint
+    return Vue.http.post(REFRESH_TOKEN_URL)
+  }
+
+  static retry (request) {
+    return Vue
+            .http(request)
+            .then((data) => {
+              return data
+            })
   }
 }
 

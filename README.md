@@ -1,8 +1,9 @@
 # VueJS 2.0 Example Project
-
-A scalable Single Page Application (SPA) example. This example uses Vue-cli, VueRouter, Vuex, VueResource and more. Clone the repo to use right away or read through this tutorial below to get an idea of how to build the project from scratch and setup Sublime Text.
+# (and Tutorial)
+A scalable Single Page Application (SPA) example. This example uses Vue-cli, VueRouter, Vuex, VueResource and more. Clone the repo, do `npm install`, and use right away or read through this tutorial below to get an idea of how to build the project from scratch and setup Sublime Text.
 
 ## Table of Contents
+1. [Todo](#todo)
 1. [Install Node](#install-node)
 2. [Install Vue-CLI](#install-vue-cli)
 3. [Add Dependencies](#add-dependencies)
@@ -19,6 +20,11 @@ A scalable Single Page Application (SPA) example. This example uses Vue-cli, Vue
 14. [App.scss](#app-scss)
 15. [Unit Testing and End-to-End Testing](#unit-testing-and-end-to-end-testing)
 16. [Run the Dev Server](#run-the-dev-server)
+
+## Todo
+
+- Currently, remote calls are made to an online example demo server [here](http://brentertainment.com/oauth2/) by Brent Shaffer. We can remove this and instead setup up a Node.js Express OAuth2 server for better demonstration. 
+- Add a section in this tutorial about working in a production environment.
 
 ## Install Node
 
@@ -241,15 +247,27 @@ import store from './store'
 import VueResource from 'vue-resource'
 Vue.use(VueResource)
 
+/* App sass */
 import './assets/style/app.scss'
+
+/* App component */
 import App from './components/App.vue'
 
+/* Create and Mount our Vue instance */
 new Vue({
+  // Attach the Vue instance to the window,
+  // so it's available globally.
+  created: function () {
+    window.vue = this
+  },
   router,
   store,
   render: h => h(App)
 }).$mount('#app')
 
+/* Auth initialize */
+import Auth from './auth'
+Auth.initialize()
 
 ```
 #### src/routes.js
@@ -293,7 +311,7 @@ const router = new VueRouter({
 
 function guardRoute (to, from, next) {
   // work-around to get to the Vuex store (as of Vue 2.0)
-  var auth = router.app.$options.store.state.auth
+  const auth = router.app.$options.store.state.auth
 
   if (!auth.isLoggedIn) {
     next({
@@ -327,19 +345,39 @@ Let's setup the state of our central data storage, which will consist of Authent
 
 ```js
 /* globals localStorage */
+import { defaultState } from './default-state'
+
+// Set the key we'll use in local storage.
+// Go to Chrome dev tools, application tab, click "Local Storage" and "http://localhost:8080"
+// and look for the key set below:
 export const STORAGE_KEY = 'example-vue-project'
 
-var initialState = {
-  'auth': {
-    'isLoggedIn': false
-  }
-}
+let initialState = defaultState
 
+// Check local storage for our key and retrieve the data, if it exists, 
+// otherwise use defaults.
 if (localStorage.getItem(STORAGE_KEY)) {
   initialState = JSON.parse(localStorage.getItem(STORAGE_KEY))
 }
 
 export const state = initialState
+
+```
+
+#### /src/store/default-state.js
+
+```js
+export const defaultState = {
+  'auth': {
+    'isLoggedIn': false,
+    'accessToken': null
+  },
+  'user': {
+    'name': null
+    // ...more user profile properties can go here.
+  }
+}
+
 ```
 
 ### Vuex Mutations, Getters, and Actions
@@ -349,9 +387,31 @@ Now create a file to hold all the methods that will change the state in our Vuex
 #### /src/store/mutations.js
 
 ```js
-export const updateAuth = (state, auth) => {
+import { defaultState } from './default-state'
+
+export const UPDATE_AUTH = (state, auth) => {
   state.auth = auth
 }
+
+export const UPDATE_USER = (state, user) => {
+  state.user = user
+}
+
+/**
+ * Clear each property, one by one, so reactivity still works.
+ *
+ * (ie. clear out state.auth.isLoggedIn so Navbar component automatically reacts to logged out state,
+ * and the Navbar menu adjusts accordingly)
+ */
+export const CLEAR_ALL_DATA = (state) => {
+  // Auth
+  state.auth.isLoggedIn = defaultState.auth.isLoggedIn
+  state.auth.accessToken = defaultState.auth.accessToken
+
+  // User
+  state.user.name = defaultState.user.name
+}
+
 ```
 
 And some getters (although you can accesss the Vuex state directly as we'll see shortly):
@@ -386,10 +446,15 @@ import { STORAGE_KEY } from './state'
 const localStoragePlugin = store => {
   store.subscribe((mutation, state) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+
+    if (mutation.type === 'CLEAR_ALL_DATA') {
+      localStorage.removeItem(STORAGE_KEY)
+    }
   })
 }
 
 export default [localStoragePlugin]
+
 ```
 
 ### Vuex index.js
@@ -426,30 +491,57 @@ Now let's add our auth script:
 #### /src/auth.js
 
 ```js
+import Vue from 'vue'
 const LOGIN_URL = 'http://localhost:8080/auth'
-
-var vue
+const REFRESH_TOKEN_URL = 'http://localhost:8080'  // <-- TODO: replace with your refresh token oauth2 endpoint
+let vue = {}
 
 class Auth {
 
-  constructor (options) {
-    vue = options.vue
-    this.isLoggedIn = vue.$store.state.auth.isLoggedIn
-    this.accessToken = vue.$store.state.auth.accessToken
+  static initialize () {
+    vue = window.vue
+
+    // Attach the token on every request
+    Vue.http.interceptors.push((request, next) => {
+      const token = vue.$store.state.auth.accessToken
+
+      // Set the Authorization header if user is logged in.
+      if (token && !request.headers.has('Authorization')) {
+        request.headers.set('Authorization', 'Bearer ' + vue.$store.state.auth.accessToken)
+      }
+
+      next()
+    })
+
+    // Attempts to refresh the token
+    Vue.http.interceptors.push((request, next) => {
+      next((response) => {
+        // TODO: check for expired token more specifically, limit retries
+        if (response.status === 401 && response.data.error === 'invalid_token') {
+          return Auth.refreshToken().then((result) => {
+            const token = result.body.access_token
+
+            Auth.storeToken(token)
+            request.headers.set('Authorization', 'Bearer ' + token)
+
+            return Auth.retry(request)
+          }).catch(() => {
+            Auth.logout()
+            return vue.$router.push({ name: 'login' })
+          })
+        }
+      })
+    })
   }
 
-  login (creds, redirect) {
-    var request = this.buildLoginRequest(creds.username, creds.password)
+  static login (creds, redirect) {
+    const request = this.buildLoginRequest(creds.username, creds.password)
 
-    var auth = vue.$store.state.auth
-    console.log(request.body)
     return vue.$http
       .post(LOGIN_URL, request.body, request.options)
       .then((response) => {
-        auth.accessToken = response.body.access_token
-        // auth.refreshToken = response.body.refresh_token
-        auth.isLoggedIn = true
-        vue.$store.commit('updateAuth', auth)
+        Auth.storeToken(response.body.access_token)
+        // need to also store response.body.refresh_token
 
         if (redirect) {
           vue.$router.push(redirect)
@@ -460,20 +552,30 @@ class Auth {
       })
   }
 
-  signup (creds, redirect) {
+  static storeToken (token) {
+    const auth = vue.$store.state.auth
+    const user = vue.$store.state.user
+
+    auth.accessToken = token
+    auth.isLoggedIn = true
+
+    // TODO: get user's name from response from Oauth server
+    user.name = 'John Smith'
+
+    vue.$store.commit('UPDATE_AUTH', auth)
+    vue.$store.commit('UPDATE_USER', user)
+  }
+
+  static signup (creds, redirect) {
     // TODO
   }
 
-  logout () {
-    var auth = vue.$store.state.auth
-
-    auth.accessToken = null
-    auth.isLoggedIn = false
-    vue.$store.commit('updateAuth', auth)
+  static logout () {
+    vue.$store.commit('CLEAR_ALL_DATA')
     vue.$router.push('/login')
   }
 
-  buildLoginRequest (username, password) {
+  static buildLoginRequest (username, password) {
     return {
       options: {
         headers: {
@@ -490,15 +592,25 @@ class Auth {
     }
   }
 
-  getAuthHeader () {
-    return {
-      'Authorization': 'Bearer ' + vue.$store.state.auth.accessToken
-    }
+  static refreshToken () {
+    // TODO: Need to replace with a call to refresh token oauth2 endpoint
+    return Vue.http.post(REFRESH_TOKEN_URL)
+  }
+
+  static retry (request) {
+    return Vue
+            .http(request)
+            .then((data) => {
+              return data
+            })
   }
 }
 
 export default Auth
+
 ```
+
+Checkout out `Login.vue` component to see how we use `Auth`. Also take a look at `Dashboard.vue` component, you can see the Vue-resource http interceptors help in that we don't have to worry about including headers/etc in our AJAX calls.
 
 ## Proxy Api Calls in Webpack Dev Server
 
@@ -571,7 +683,7 @@ In the `/src/components` folder create the following vue files (just copy these 
   /components
     - App.vue
     - AppFooter.vue
-    - AppTitle.vue
+    - PageTitle.vue
     - Dashboard.vue
     - Login.vue
     - Navbar.vue
@@ -603,7 +715,7 @@ $icon-font-path: '../../../../node_modules/bootstrap-sass/assets/fonts/bootstrap
 
 ```
 
-Take a look at some of the components (ie. `AppTitle` component). You'll see we import these variablese so we can use them in our component styling.
+Take a look at some of the components (ie. `PageTitle` component). You'll see we import these variablese so we can use them in our component styling.
 
 ## Fonts and Font-Awesome
 
