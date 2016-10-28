@@ -544,11 +544,11 @@ class Auth {
         // need to also store response.body.refresh_token
 
         if (redirect) {
-          vue.$router.push(redirect)
+          vue.$router.push({ name: redirect })
         }
       })
-      .catch((error) => {
-        vue.error = error
+      .catch((errorResponse) => {
+        return errorResponse
       })
   }
 
@@ -572,7 +572,7 @@ class Auth {
 
   static logout () {
     vue.$store.commit('CLEAR_ALL_DATA')
-    vue.$router.push('/login')
+    vue.$router.push({ name: 'login' })
   }
 
   static buildLoginRequest (username, password) {
@@ -911,3 +911,9 @@ Open your browser and visit http://localhost:8080 . You should see something lik
     
           
 <img src="docs/images/home-page.png" width=1200" />  
+
+## Vue Dev Tools
+
+Visit the Chrome Web Store to get the [Vue Dev Tools extension](https://chrome.google.com/webstore/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)  for helping debug Vue.js applications.
+
+Once installed, Open Chrome dev tools and got to the "Vue" tab.
