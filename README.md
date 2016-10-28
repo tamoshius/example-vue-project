@@ -23,7 +23,7 @@ A scalable Single Page Application (SPA) example. This example uses Vue-cli, Vue
 
 ## Todo
 
-- Currently, remote calls are made to an online example demo server [here](http://brentertainment.com/oauth2/) by Brent Shaffer. We can remove this and instead setup up a Node.js Express OAuth2 server for better demonstration. 
+- Currently, remote calls are made to an online example OAuth2 demo server [here](http://brentertainment.com/oauth2/) by Brent Shaffer. We can remove this and instead setup up a Node.js Express OAuth2 server for better demonstration. 
 - Add a section in this tutorial about working in a production environment.
 
 ## Install Node
@@ -210,7 +210,7 @@ For example, here's how you can install the **Oceanic Next** theme:
 
 ## Configure ESLint
 
-#### /eslintrc.js
+#### eslintrc.js
 
 ```js
 module.exports = {
@@ -341,7 +341,7 @@ Now let's create the following files that will comprise our central Vuex storage
 
 Let's setup the state of our central data storage, which will consist of Authentication data and User data. Also, when the app bootstraps, we want to first check in the browser's localStorage and retrieve all of our previously stored data.
 
-#### /src/store/state.js
+#### src/store/state.js
 
 ```js
 /* globals localStorage */
@@ -364,7 +364,7 @@ export const state = initialState
 
 ```
 
-#### /src/store/default-state.js
+#### src/store/default-state.js
 
 ```js
 export const defaultState = {
@@ -384,7 +384,7 @@ export const defaultState = {
 
 Now create a file to hold all the methods that will change the state in our Vuex store:
 
-#### /src/store/mutations.js
+#### src/store/mutations.js
 
 ```js
 import { defaultState } from './default-state'
@@ -416,7 +416,7 @@ export const CLEAR_ALL_DATA = (state) => {
 
 And some getters (although you can accesss the Vuex state directly as we'll see shortly):
 
-#### /src/store/getters.js
+#### src/store/getters.js
 
 ```js
 export const user = state => state.user
@@ -424,7 +424,7 @@ export const user = state => state.user
 
 We'll also go ahead and add an actions file (but leave it empty for this project since we don't need it):
 
-#### /src/store/actions.js
+#### src/store/actions.js
 
 ```js
 // Here is where you can put async operations.
@@ -437,7 +437,7 @@ We'll also go ahead and add an actions file (but leave it empty for this project
 ### Vuex Plugins
 Plugins offer a nice approach to hook into mutations and do things like logging or syncing with another store such as `localStorage` or `websockets`:
 
-#### /src/store/plugins.js
+#### src/store/plugins.js
 
 ```js
 /* globals localStorage */
@@ -461,7 +461,7 @@ export default [localStoragePlugin]
 
 And bring it all together in the index.js file:
 
-#### /src/store/index.js
+#### src/store/index.js
 
 ```js
 import Vue from 'vue'
@@ -488,7 +488,7 @@ export default store
 
 Now let's add our auth script:
 
-#### /src/auth.js
+#### src/auth.js
 
 ```js
 import Vue from 'vue'
@@ -610,7 +610,7 @@ export default Auth
 
 ```
 
-Checkout out `Login.vue` component to see how we use `Auth`. Also take a look at `Dashboard.vue` component, you can see the Vue-resource http interceptors help in that we don't have to worry about including headers/etc in our AJAX calls.
+Checkout out `Login.vue` component to see how we use `Auth`. Also take a look at `Dashboard.vue` component, you can see the Vue-resource http interceptors let us not worry about including authorization headers in our AJAX calls. The interceptors also take care of refreshing tokens behind the scenes. However, I didn't put in a refresh token url. See the comments marked "TODO" and add your own refresh token url. I plan to update this demo using a Node Express OAuth2 server for better demonstration of Auth flow. 
 
 ## Proxy Api Calls in Webpack Dev Server
 
@@ -696,7 +696,7 @@ Take a look through these components and see how they interact with each other.
 
 To configure Bootstrap, add a folder `style` to your `/assets` directory and create the following sass files:
 
-#### /src/assets/style/_bootstrap.scss
+#### src/assets/style/_bootstrap.scss
 
 ```scss
 @import './variables';
@@ -704,7 +704,7 @@ To configure Bootstrap, add a folder `style` to your `/assets` directory and cre
 @import '../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/theme';
 ```
 
-#### /src/assets/style/_variables.scss
+#### src/assets/style/_variables.scss
 
 ```scss
 $bootstrap-sass-asset-helper: true !default;
@@ -721,22 +721,24 @@ Take a look at some of the components (ie. `PageTitle` component). You'll see we
 
 Create a folder `fonts` and add your font files there:
 
-#### /src/assets/fonts
+
 
 ```
-/fonts
-	/lato
-		Lato-Black.eot
-		Lato-Black.ttf
-		Lato-Black.woff
-		Lato-Black.woff2
-		
-		// etc. more fonts
+/src
+   /assets
+      /fonts
+	     /lato
+		    Lato-Black.eot
+		    Lato-Black.ttf
+		    Lato-Black.woff
+		    Lato-Black.woff2
+		   
+		   // etc. more fonts
 ```
 
 Then back in your style folder, add a `_fonts.scss` stylesheet. We'll setup your fonts and also `font-awesome` here:
 
-#### /src/assets/style/_fonts.scss
+#### src/assets/style/_fonts.scss
 
 ```scss
 /* Font Awesome */
@@ -767,7 +769,7 @@ You can read more about static assets here: https://vuejs-templates.github.io/we
 
 Bring everything to together into an `app.scss` file that we import in our main entry:
 
-#### /src/assets/style/app.scss
+#### src/assets/style/app.scss
 
 ```
 @import './bootstrap';
@@ -811,7 +813,7 @@ npm install babel-polyfill --save-dev
 
 A unit test is included from the Webpack template already. It's a simple example that tests the content outputted from the Hello vue component:
 
-#### /test/unit/specs/Hello.spec.js
+#### test/unit/specs/Hello.spec.js
 
 ```js
 import Vue from 'vue'
@@ -832,7 +834,7 @@ describe('Hello.vue', () => {
 
 I find End-to-End testing and Integration testing even more beneficial. Vue-cli has put together a nice setup that includes Nightwatch.js (which uses Selenium and a Chrome driver) for e2e testing right out of the box. Let's remove the existing test located at `test/e2e/specs/test.js` since it will no longer work with the changes we have made. Let's add a new test that tests that our login form works and that we can reach the dashboard:
 
-#### /test/e2e/specs/loginTest.js
+#### test/e2e/specs/loginTest.js
 
 ```js
 // For authoring Nightwatch tests, see

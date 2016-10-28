@@ -60,7 +60,12 @@ export default {
         username: this.credentials.username,
         password: this.credentials.password
       }
-      Auth.login(credentials, '/')
+
+      // Auth.login() returns a promise on error or redirects on success.
+      // Use .then() to capture the error response, as shown below.
+      Auth.login(credentials, 'dashboard').then((response) => {
+        this.error = response.body.error_description
+      })
     }
   }
 }

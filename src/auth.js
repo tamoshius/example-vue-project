@@ -51,11 +51,11 @@ class Auth {
         // need to also store response.body.refresh_token
 
         if (redirect) {
-          vue.$router.push(redirect)
+          vue.$router.push({ name: redirect })
         }
       })
-      .catch((error) => {
-        vue.error = error
+      .catch((errorResponse) => {
+        return errorResponse
       })
   }
 
@@ -79,7 +79,7 @@ class Auth {
 
   static logout () {
     vue.$store.commit('CLEAR_ALL_DATA')
-    vue.$router.push('/login')
+    vue.$router.push({ name: 'login' })
   }
 
   static buildLoginRequest (username, password) {
