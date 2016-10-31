@@ -9,7 +9,10 @@
         <div class="panel-body">
           <strong>You've reached the dashboard!</strong><br><br>
 
-          See <code>/config/index.js</code> to change the API proxy to point to your own backend.<br><br>
+          See <code>/config/index.js</code> to change the OAuth server proxy and 
+          also the API proxy to point to your own. Currently, this project uses an 
+          online OAuth2 demo located <a href="http://brentertainment.com/oauth2/">here</a>
+          by Brent Shaffer. I hope to update this soon with a Node Express OAuth server.<br><br>
 
           See also comments marked with "TODO" in <code>src/auth.js</code>.<br><br>
 

@@ -11,7 +11,7 @@ A scalable Single Page Application (SPA) example. This example uses Vue-cli, Vue
 5. [Configure Sublime Text 3](#configure-sublime-text-3)
 6. [Configure ESLint](#configure-eslint)
 7. [Setup Main and Routes](#setup-main-and-routes)
-8. [Setup Authentication, User Profile, and Vuex](#setup-authentication-user-profile-and-vuex)
+8. [Setup Authentication (OAuth2), User Profile, and Vuex](#setup-authentication-user-profile-and-vuex)
 9. [Proxy Api Calls in Webpack Dev Server](#proxy-api-calls-in-webpack-dev-server)
 10. [Components](#components)
 11. [Twitter Bootstrap Configuration](#twitter-bootstrap-configuration)
@@ -24,7 +24,7 @@ A scalable Single Page Application (SPA) example. This example uses Vue-cli, Vue
 
 ## Todo
 
-- Currently, remote calls are made to an online example OAuth2 demo server [here](http://brentertainment.com/oauth2/) by Brent Shaffer. We can remove this and instead setup up a Node.js Express OAuth2 server for better demonstration. 
+- Currently, remote calls are made to an online example OAuth2 demo server [here](http://brentertainment.com/oauth2/) by Brent Shaffer. We can remove this and instead setup up a Node.js Express OAuth2. 
 - Add a section in this tutorial about working in a production environment.
 
 ## Install Node
@@ -487,7 +487,7 @@ export default store
 ```
 ### Auth Script
 
-Now let's add our auth script:
+Now let's add our auth script. Here we handle getting **OAuth2** access_tokens and automatically refreshing them.
 
 #### src/auth.js
 
@@ -672,6 +672,7 @@ dev:  {
     
     proxyTable: {
       '/auth': {
+        // TODO: Update to use node express oauth2 server for better example.
         target: 'http://brentertainment.com/oauth2/lockdin/token',  // <-- demo oauth2 server, https://github.com/bshaffer/oauth2-demo-php
         changeOrigin: true,
         ws: true,
@@ -682,11 +683,11 @@ dev:  {
         }
       },
       '/api': {
-        target: 'http://localhost:8081',  // api server
+        target: 'http://brentertainment.com/oauth2',  // api server
         changeOrigin: true,               // needed for virtual hosted sites
         ws: true,                         // proxy websockets
         pathRewrite: {
-          '^/api': '/backend-service'     // rewrite path localhost:8080/api to localhost:8081/backend-service
+          '^/api': '/lockdin'     // rewrite path localhost:8080/api to http://brentertainment.com/oauth2/lockdin
         },
         router: {
           // when request.headers.host == 'dev.localhost:3000',
