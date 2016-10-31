@@ -371,7 +371,8 @@ export const state = initialState
 export const defaultState = {
   'auth': {
     'isLoggedIn': false,
-    'accessToken': null
+    'accessToken': null,
+    'refreshToken': null
   },
   'user': {
     'name': null
@@ -408,6 +409,7 @@ export const CLEAR_ALL_DATA = (state) => {
   // Auth
   state.auth.isLoggedIn = defaultState.auth.isLoggedIn
   state.auth.accessToken = defaultState.auth.accessToken
+  state.auth.refreshToken = defaultState.auth.refreshToken
 
   // User
   state.user.name = defaultState.user.name
