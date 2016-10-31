@@ -8,6 +8,8 @@ let vue = {}
 
 /**
 * Class for handling login and token authentication using OAuth2.
+*
+* public methods: initialize, login. logout
 */
 class Auth {
 
@@ -63,10 +65,24 @@ class Auth {
   }
 
   /**
+   * Logout
+   *
+   * Clear all data in our Vuex store (which resets logged-in status) and redirect back
+   * to login form.
+   *
+   * @return {void}
+   */
+  static logout () {
+    vue.$store.commit('CLEAR_ALL_DATA')
+    vue.$router.push({ name: 'login' })
+  }
+
+  /**
    * Refresh the access token
    *
    * Make an ajax call to the OAuth2 server to refresh the access token (using our refresh token).
    *
+   * @private
    * @param {Request} request Vue-resource Request instance, the original request that we'll retry.
    * @return {Promise}
    */
@@ -93,6 +109,7 @@ class Auth {
    * Update the Vuex store with the access/refresh tokens received from the response from
    * the Oauth2 server.
    *
+   * @private
    * @param {Response} response Vue-resource Response instance from an OAuth2 server.
    *      that contains our tokens.
    * @return {void}
@@ -112,21 +129,9 @@ class Auth {
   }
 
   /**
-   * Logout
-   *
-   * Clear all data in our Vuex store (which resets logged-in status) and redirect back
-   * to login form.
-   *
-   * @return {void}
-   */
-  static logout () {
-    vue.$store.commit('CLEAR_ALL_DATA')
-    vue.$router.push({ name: 'login' })
-  }
-
-  /**
    * Get the login options (including headers) to use in a Vue-resource http call.
    *
+   * @private
    * @return {Object}
    */
   static getLoginOptions () {
@@ -142,6 +147,7 @@ class Auth {
   /**
    * Get the login body (including username/password) to use in a Vue-resource http call.
    *
+   * @private
    * @return {Object}
    */
   static getLoginBody (creds) {
@@ -155,6 +161,7 @@ class Auth {
   /**
    * Get the refresh token options to use in a Vue-resource http call.
    *
+   * @private
    * @return {Object}
    */
   static getRefreshTokenOptions () {
@@ -165,6 +172,7 @@ class Auth {
   /**
    * Get the refresh token body to use in a Vue-resource http call.
    *
+   * @private
    * @return {Object}
    */
   static getRefreshTokenBody () {
@@ -177,6 +185,7 @@ class Auth {
   /**
    * Check if the Vue-resource Response is an invalid token response.
    *
+   * @private
    * @param {Response} response The Vue-resource Response instance received from an http call.
    * @return {boolean}
    */
@@ -187,6 +196,7 @@ class Auth {
   /**
    * Set the Authorization header on a Vue-resource Request.
    *
+   * @private
    * @param {Request} request The Vue-Resource Request instance to set the header on.
    * @return {void}
    */
@@ -199,6 +209,7 @@ class Auth {
   /**
    * Retry a request.
    *
+   * @private
    * @param {Request} request The Vue-resource Request instance to use to repeat an http call.
    * @return {Promise}
    */
