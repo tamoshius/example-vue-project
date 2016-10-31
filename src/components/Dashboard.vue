@@ -9,17 +9,15 @@
         <div class="panel-body">
           <strong>You've reached the dashboard!</strong><br><br>
 
-          You need to have your backend respond to 
-          <a href="http://localhost:8081/backend-service/users/test">http://localhost:8081/backend-service/users/test</a>
-          before clicking the button below.<br>
-          See <code>/config/index.js</code> to change this endpoint.<br><br>
+          See <code>/config/index.js</code> to change the API proxy to point to your own backend.<br><br>
 
-          You will also need to add the refresh token endpoint for your OAuth2 server in <code>src/auth.js</code>. When access tokens expire,
-          they are automatically refreshed behind the scenes. The Vue-resource interceptors are already setup for you, just
-          provide your refresh token endpoint.
-          See comments marked with "TODO" in <code>src/auth.js</code>.<br><br>
+          See also comments marked with "TODO" in <code>src/auth.js</code>.<br><br>
 
           <button class="btn btn-primary" v-on:click="getTestData()">Get some data from backend api</button>
+          <br><br>
+          <div class="alert alert-danger" v-if="error">
+            <p>{{ error }}</p>
+          </div>          
           <div class="testdata-area" v-if="testdata">
             <h2><blockquote>{{ testdata }}</blockquote></h2>      
           </div>
@@ -38,19 +36,23 @@ export default {
   components: { PageTitle },
   data () {
     return {
-      testdata: ''
+      testdata: '',
+      error: ''
     }
   },
   methods: {
     getTestData () {
       this.$http
         // automatically authorized, thanks to our interceptors in auth.js
-        .get('http://localhost:8080/api/users/test')
+        .get('/api/resource')
         .then((response) => {
           this.testdata = response.body
         })
-        .catch((error) => {
-          console.log(error)
+        .catch((errorResponse) => {
+          this.error = errorResponse.statusText
+          if (errorResponse.body.hasOwnProperty('error_description')) {
+            this.error += ': ' + errorResponse.body.error_description
+          }
         })
     }
   }

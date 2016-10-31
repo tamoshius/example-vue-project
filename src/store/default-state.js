@@ -1,7 +1,8 @@
 export const defaultState = {
   'auth': {
     'isLoggedIn': false,
-    'accessToken': null
+    'accessToken': null,
+    'refreshToken': null
   },
   'user': {
     'name': null

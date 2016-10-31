@@ -1,6 +1,9 @@
+const LOGIN_URL = '/auth'
+const REFRESH_TOKEN_URL = '/auth'
+const CLIENT_SECRET = 'ZGVtb2FwcDpkZW1vcGFzcw==' // <-- Base64(client_id:client_secret) "demoapp:demopass"
+
 import Vue from 'vue'
-const LOGIN_URL = 'http://localhost:8080/auth'
-const REFRESH_TOKEN_URL = 'http://localhost:8080'  // <-- TODO: replace with your refresh token oauth2 endpoint
+
 let vue = {}
 
 class Auth {
@@ -15,6 +18,9 @@ class Auth {
       // Set the Authorization header if user is logged in.
       if (token && !request.headers.has('Authorization')) {
         request.headers.set('Authorization', 'Bearer ' + vue.$store.state.auth.accessToken)
+        // TODO: The demo Oauth2 server we are using requires this param, but normally you only
+        // set the header as shown above. You should delete this line below in your own project:
+        request.params.access_token = vue.$store.state.auth.accessToken
       }
 
       next()
@@ -23,50 +29,62 @@ class Auth {
     // Attempts to refresh the token
     Vue.http.interceptors.push((request, next) => {
       next((response) => {
-        // TODO: check for expired token more specifically, limit retries
         if (response.status === 401 && response.data.error === 'invalid_token') {
-          return Auth.refreshToken().then((result) => {
-            const token = result.body.access_token
+          const refreshTokenRequest = Auth.buildRefreshTokenRequest()
 
-            Auth.storeToken(token)
-            request.headers.set('Authorization', 'Bearer ' + token)
+          return Vue.http.post(REFRESH_TOKEN_URL, refreshTokenRequest.body, refreshTokenRequest.options)
+            .then((result) => {
+              // Store the token
+              Auth.storeToken(result)
 
-            return Auth.retry(request)
-          }).catch(() => {
-            Auth.logout()
-            return vue.$router.push({ name: 'login' })
-          })
+              // Set auth header
+              request.headers.set('Authorization', 'Bearer ' + vue.$store.state.auth.accessToken)
+              // TODO: The demo Oauth2 server we are using requires this param, but normally you only
+              // set the header as shown above. You should delete this line below in your own project:
+              request.params.access_token = vue.$store.state.auth.accessToken
+
+              // Retry the original request
+              return Auth.retry(request)
+            })
+            .catch((errorResponse) => {
+              if (errorResponse.status === 401 && errorResponse.data.error === 'invalid_token') {
+                Auth.logout()
+              }
+              return errorResponse
+            })
         }
       })
     })
   }
 
   static login (creds, redirect) {
-    const request = this.buildLoginRequest(creds.username, creds.password)
+    const request = Auth.buildLoginRequest(creds.username, creds.password)
 
     return vue.$http
       .post(LOGIN_URL, request.body, request.options)
       .then((response) => {
-        Auth.storeToken(response.body.access_token)
-        // need to also store response.body.refresh_token
+        Auth.storeToken(response)
 
         if (redirect) {
           vue.$router.push({ name: redirect })
         }
+
+        return response
       })
       .catch((errorResponse) => {
         return errorResponse
       })
   }
 
-  static storeToken (token) {
+  static storeToken (response) {
     const auth = vue.$store.state.auth
     const user = vue.$store.state.user
 
-    auth.accessToken = token
     auth.isLoggedIn = true
-
-    // TODO: get user's name from response from Oauth server
+    auth.accessToken = response.body.access_token
+    auth.refreshToken = response.body.refresh_token
+    // TODO: get user's name from response from Oauth server.
+    // For now, we'll just manually insert one for demo purposes.
     user.name = 'John Smith'
 
     vue.$store.commit('UPDATE_AUTH', auth)
@@ -75,6 +93,7 @@ class Auth {
 
   static signup (creds, redirect) {
     // TODO
+    // Probably should be handled in another class.
   }
 
   static logout () {
@@ -87,7 +106,7 @@ class Auth {
       options: {
         headers: {
           'Content-type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Basic ' + 'ZGVtb2FwcDpkZW1vcGFzcw=='  // <-- Base64(client_id:client_secret) "demoapp:demopass"
+          'Authorization': 'Basic ' + CLIENT_SECRET
         },
         emulateJSON: true
       },
@@ -99,9 +118,20 @@ class Auth {
     }
   }
 
-  static refreshToken () {
-    // TODO: Need to replace with a call to refresh token oauth2 endpoint
-    return Vue.http.post(REFRESH_TOKEN_URL)
+  static buildRefreshTokenRequest () {
+    return {
+      options: {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Basic ' + CLIENT_SECRET
+        },
+        emulateJSON: true
+      },
+      body: {
+        'grant_type': 'refresh_token',
+        'refresh_token': vue.$store.state.auth.refreshToken
+      }
+    }
   }
 
   static retry (request) {

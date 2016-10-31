@@ -34,11 +34,11 @@ module.exports = {
         }
       },
       '/api': {
-        target: 'http://localhost:8081',  // api server
+        target: 'http://brentertainment.com/oauth2',  // api server
         changeOrigin: true,               // needed for virtual hosted sites
         ws: true,                         // proxy websockets
         pathRewrite: {
-          '^/api': '/backend-service'     // rewrite path localhost:8080/api to localhost:8081/backend-service
+          '^/api': '/lockdin'     // rewrite path localhost:8080/api to http://brentertainment.com/oauth2/lockdin
         },
         router: {
           // when request.headers.host == 'dev.localhost:3000',

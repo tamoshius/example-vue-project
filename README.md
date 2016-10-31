@@ -20,6 +20,7 @@ A scalable Single Page Application (SPA) example. This example uses Vue-cli, Vue
 14. [App.scss](#app-scss)
 15. [Unit Testing and End-to-End Testing](#unit-testing-and-end-to-end-testing)
 16. [Run the Dev Server](#run-the-dev-server)
+17. [Vue Dev Tools](#vue-dev-tools)
 
 ## Todo
 
@@ -491,9 +492,12 @@ Now let's add our auth script:
 #### src/auth.js
 
 ```js
+const LOGIN_URL = '/auth'
+const REFRESH_TOKEN_URL = '/auth'
+const CLIENT_SECRET = 'ZGVtb2FwcDpkZW1vcGFzcw==' // <-- Base64(client_id:client_secret) "demoapp:demopass"
+
 import Vue from 'vue'
-const LOGIN_URL = 'http://localhost:8080/auth'
-const REFRESH_TOKEN_URL = 'http://localhost:8080'  // <-- TODO: replace with your refresh token oauth2 endpoint
+
 let vue = {}
 
 class Auth {
@@ -508,6 +512,9 @@ class Auth {
       // Set the Authorization header if user is logged in.
       if (token && !request.headers.has('Authorization')) {
         request.headers.set('Authorization', 'Bearer ' + vue.$store.state.auth.accessToken)
+        // TODO: The demo Oauth2 server we are using requires this param, but normally you only
+        // set the header as shown above. You should delete this line below in your own project:
+        request.params.access_token = vue.$store.state.auth.accessToken
       }
 
       next()
@@ -516,50 +523,62 @@ class Auth {
     // Attempts to refresh the token
     Vue.http.interceptors.push((request, next) => {
       next((response) => {
-        // TODO: check for expired token more specifically, limit retries
         if (response.status === 401 && response.data.error === 'invalid_token') {
-          return Auth.refreshToken().then((result) => {
-            const token = result.body.access_token
+          const refreshTokenRequest = Auth.buildRefreshTokenRequest()
 
-            Auth.storeToken(token)
-            request.headers.set('Authorization', 'Bearer ' + token)
+          return Vue.http.post(REFRESH_TOKEN_URL, refreshTokenRequest.body, refreshTokenRequest.options)
+            .then((result) => {
+              // Store the token
+              Auth.storeToken(result)
 
-            return Auth.retry(request)
-          }).catch(() => {
-            Auth.logout()
-            return vue.$router.push({ name: 'login' })
-          })
+              // Set auth header
+              request.headers.set('Authorization', 'Bearer ' + vue.$store.state.auth.accessToken)
+              // TODO: The demo Oauth2 server we are using requires this param, but normally you only
+              // set the header as shown above. You should delete this line below in your own project:
+              request.params.access_token = vue.$store.state.auth.accessToken
+
+              // Retry the original request
+              return Auth.retry(request)
+            })
+            .catch((errorResponse) => {
+              if (errorResponse.status === 401 && errorResponse.data.error === 'invalid_token') {
+                Auth.logout()
+              }
+              return errorResponse
+            })
         }
       })
     })
   }
 
   static login (creds, redirect) {
-    const request = this.buildLoginRequest(creds.username, creds.password)
+    const request = Auth.buildLoginRequest(creds.username, creds.password)
 
     return vue.$http
       .post(LOGIN_URL, request.body, request.options)
       .then((response) => {
-        Auth.storeToken(response.body.access_token)
-        // need to also store response.body.refresh_token
+        Auth.storeToken(response)
 
         if (redirect) {
           vue.$router.push({ name: redirect })
         }
+
+        return response
       })
       .catch((errorResponse) => {
         return errorResponse
       })
   }
 
-  static storeToken (token) {
+  static storeToken (response) {
     const auth = vue.$store.state.auth
     const user = vue.$store.state.user
 
-    auth.accessToken = token
     auth.isLoggedIn = true
-
-    // TODO: get user's name from response from Oauth server
+    auth.accessToken = response.body.access_token
+    auth.refreshToken = response.body.refresh_token
+    // TODO: get user's name from response from Oauth server.
+    // For now, we'll just manually insert one for demo purposes.
     user.name = 'John Smith'
 
     vue.$store.commit('UPDATE_AUTH', auth)
@@ -568,6 +587,7 @@ class Auth {
 
   static signup (creds, redirect) {
     // TODO
+    // Probably should be handled in another class.
   }
 
   static logout () {
@@ -580,7 +600,7 @@ class Auth {
       options: {
         headers: {
           'Content-type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Basic ' + 'ZGVtb2FwcDpkZW1vcGFzcw=='  // <-- Base64(client_id:client_secret) "demoapp:demopass"
+          'Authorization': 'Basic ' + CLIENT_SECRET
         },
         emulateJSON: true
       },
@@ -592,9 +612,20 @@ class Auth {
     }
   }
 
-  static refreshToken () {
-    // TODO: Need to replace with a call to refresh token oauth2 endpoint
-    return Vue.http.post(REFRESH_TOKEN_URL)
+  static buildRefreshTokenRequest () {
+    return {
+      options: {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Basic ' + CLIENT_SECRET
+        },
+        emulateJSON: true
+      },
+      body: {
+        'grant_type': 'refresh_token',
+        'refresh_token': vue.$store.state.auth.refreshToken
+      }
+    }
   }
 
   static retry (request) {
@@ -608,9 +639,10 @@ class Auth {
 
 export default Auth
 
+
 ```
 
-Checkout out `Login.vue` component to see how we use `Auth`. Also take a look at `Dashboard.vue` component, you can see the Vue-resource http interceptors let us not worry about including authorization headers in our AJAX calls. The interceptors also take care of refreshing tokens behind the scenes. However, I didn't put in a refresh token url. See the comments marked "TODO" and add your own refresh token url. I plan to update this demo using a Node Express OAuth2 server for better demonstration of Auth flow. 
+Checkout out `Login.vue` component to see how we use `Auth`. Also take a look at `Dashboard.vue` component, you can see the Vue-resource http interceptors let us not worry about including authorization headers in our AJAX calls. The interceptors also take care of refreshing tokens behind the scenes. See the comments marked "TODO" for some caveats with this demo and your own project. I hope to update this demo using a Node Express OAuth2 server for better demonstration of Auth flow. 
 
 ## Proxy Api Calls in Webpack Dev Server
 
@@ -916,4 +948,9 @@ Open your browser and visit http://localhost:8080 . You should see something lik
 
 Visit the Chrome Web Store to get the [Vue Dev Tools extension](https://chrome.google.com/webstore/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)  for helping debug Vue.js applications.
 
-Once installed, Open Chrome dev tools and got to the "Vue" tab.
+Once installed, Open Chrome dev tools and go to the "Vue" tab.
+
+#### Vuex Tab
+If you click on the "Vuex" tab, you can see all data from the store in the right pane. Click the `export button` to copy the data to the clipboard. Click the `import button` and paste the clipboard data there. 
+
+For example, you can alter the *accessToken* to something invalid (to simulate an expired *oauth access_token* without waiting on actual expiration) in the pasted data. Then click the `import button` again and the Vuex store will live update. Now you can confirm that the automatic refreshToken interceptor works.
