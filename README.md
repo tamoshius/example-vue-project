@@ -346,29 +346,13 @@ Let's setup the state of our central data storage, which will consist of Authent
 
 ```js
 /* globals localStorage */
-import { defaultState } from './default-state'
 
 // Set the key we'll use in local storage.
 // Go to Chrome dev tools, application tab, click "Local Storage" and "http://localhost:8080"
-// and look for the key set below:
+// and you'll see this key set below (if logged in):
 export const STORAGE_KEY = 'example-vue-project'
 
-let initialState = defaultState
-
-// Check local storage for our key and retrieve the data, if it exists, 
-// otherwise use defaults.
-if (localStorage.getItem(STORAGE_KEY)) {
-  initialState = JSON.parse(localStorage.getItem(STORAGE_KEY))
-}
-
-export const state = initialState
-
-```
-
-#### src/store/default-state.js
-
-```js
-export const defaultState = {
+let initialState = {
   'auth': {
     'isLoggedIn': false,
     'accessToken': null,
@@ -380,6 +364,14 @@ export const defaultState = {
   }
 }
 
+// Check local storage for our key and retrieve the data, if it exists,
+// otherwise use defaults.
+if (localStorage.getItem(STORAGE_KEY)) {
+  initialState = JSON.parse(localStorage.getItem(STORAGE_KEY))
+}
+
+export const state = initialState
+
 ```
 
 ### Vuex Mutations, Getters, and Actions
@@ -389,8 +381,6 @@ Now create a file to hold all the methods that will change the state in our Vuex
 #### src/store/mutations.js
 
 ```js
-import { defaultState } from './default-state'
-
 export const UPDATE_AUTH = (state, auth) => {
   state.auth = auth
 }
@@ -404,16 +394,19 @@ export const UPDATE_USER = (state, user) => {
  *
  * (ie. clear out state.auth.isLoggedIn so Navbar component automatically reacts to logged out state,
  * and the Navbar menu adjusts accordingly)
+ *
+ * TODO: use a common import of default state to reset these values with.
  */
 export const CLEAR_ALL_DATA = (state) => {
   // Auth
-  state.auth.isLoggedIn = defaultState.auth.isLoggedIn
-  state.auth.accessToken = defaultState.auth.accessToken
-  state.auth.refreshToken = defaultState.auth.refreshToken
+  state.auth.isLoggedIn = false
+  state.auth.accessToken = null
+  state.auth.refreshToken = null
 
   // User
-  state.user.name = defaultState.user.name
+  state.user.name = ''
 }
+
 
 ```
 
@@ -717,7 +710,7 @@ Checkout out `Login.vue` component to see how we use `Auth`. Also take a look at
 
 ## Proxy Api Calls in Webpack Dev Server
 
-When using Webpack for Hot Reloading, we'll need to tell the webpack dev server that `/api` calls need to be reverse proxied to another server (ie. running on node express, nginx, or some embedded server in your backend IDE).
+When using Webpack for Hot Reloading, we'll need to tell the webpack dev server that `/api` calls need to be reverse proxied to another server (ie. running on node express, nginx, or some embedded server in your backend IDE). For production you would just use nginx to do the proxying. The big advantage is we don't have to worry about CORS and also we don't expose the true API endpoints to the client.
 
 Notice in `build/dev-server.js` this line:
 

@@ -1,12 +1,21 @@
 /* globals localStorage */
-import { defaultState } from './default-state'
 
 // Set the key we'll use in local storage.
 // Go to Chrome dev tools, application tab, click "Local Storage" and "http://localhost:8080"
-// and look for the key set below:
+// and you'll see this key set below (if logged in):
 export const STORAGE_KEY = 'example-vue-project'
 
-let initialState = defaultState
+let initialState = {
+  'auth': {
+    'isLoggedIn': false,
+    'accessToken': null,
+    'refreshToken': null
+  },
+  'user': {
+    'name': null
+    // ...more user profile properties can go here.
+  }
+}
 
 // Check local storage for our key and retrieve the data, if it exists,
 // otherwise use defaults.

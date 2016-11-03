@@ -1,5 +1,3 @@
-import { defaultState } from './default-state'
-
 export const UPDATE_AUTH = (state, auth) => {
   state.auth = auth
 }
@@ -13,13 +11,15 @@ export const UPDATE_USER = (state, user) => {
  *
  * (ie. clear out state.auth.isLoggedIn so Navbar component automatically reacts to logged out state,
  * and the Navbar menu adjusts accordingly)
+ *
+ * TODO: use a common import of default state to reset these values with.
  */
 export const CLEAR_ALL_DATA = (state) => {
   // Auth
-  state.auth.isLoggedIn = defaultState.auth.isLoggedIn
-  state.auth.accessToken = defaultState.auth.accessToken
-  state.auth.refreshToken = defaultState.auth.refreshToken
+  state.auth.isLoggedIn = false
+  state.auth.accessToken = null
+  state.auth.refreshToken = null
 
   // User
-  state.user.name = defaultState.user.name
+  state.user.name = ''
 }
