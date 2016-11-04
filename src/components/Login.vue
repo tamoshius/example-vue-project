@@ -63,12 +63,9 @@ export default {
 
       // Auth.login() returns a promise. A redirect will happen on success.
       // For errors, use .then() to capture the response to output
-      // statusText and an error_description (if exists) as shown below:
+      // error_description (if exists) as shown below:
       Auth.login(credentials, 'dashboard').then((response) => {
-        this.error = response.statusText
-        if (response.body.hasOwnProperty('error_description')) {
-          this.error += ': ' + response.body.error_description
-        }
+        utils.handleError(this, response)
       })
     }
   }

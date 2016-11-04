@@ -1,5 +1,3 @@
-/* globals localStorage */
-
 // Set the key we'll use in local storage.
 // Go to Chrome dev tools, application tab, click "Local Storage" and "http://localhost:8080"
 // and you'll see this key set below (if logged in):

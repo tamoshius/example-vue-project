@@ -35,7 +35,8 @@ module.exports = merge(baseWebpackConfig, {
       jquery: 'jquery',
       'window.jQuery': 'jquery',
       jQuery: 'jquery',
-      '_': 'lodash'
+      '_': 'lodash',
+      'utils': 'utils'
     })
   ]
 })

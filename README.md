@@ -7,20 +7,21 @@ A scalable Single Page Application (SPA) example. This example uses Vue-cli, Vue
 1. [Install Node](#install-node)
 2. [Install Vue-CLI](#install-vue-cli)
 3. [Add Dependencies](#add-dependencies)
-4. [Configure JQuery](#configure-jquery)
-5. [Configure Sublime Text 3](#configure-sublime-text-3)
-6. [Configure ESLint](#configure-eslint)
-7. [Setup Main and Routes](#setup-main-and-routes)
-8. [Setup Authentication (OAuth2), User Profile, and Vuex](#setup-authentication-user-profile-and-vuex)
-9. [Proxy Api Calls in Webpack Dev Server](#proxy-api-calls-in-webpack-dev-server)
-10. [Components](#components)
-11. [Twitter Bootstrap Configuration](#twitter-bootstrap-configuration)
-12. [Fonts and Font-Awesome](#fonts-and-font-awesome)
-13. [Images and Other Assets](#images-and-other-assets)
-14. [App.scss](#app-scss)
-15. [Unit Testing and End-to-End Testing](#unit-testing-and-end-to-end-testing)
-16. [Run the Dev Server](#run-the-dev-server)
-17. [Vue Dev Tools](#vue-dev-tools)
+4. [Configure JQuery and Lodash](#configure-jquery-and-lodash)
+5. [Global Utilities](#global-utilities)
+6. [Configure Sublime Text 3](#configure-sublime-text-3)
+7. [Configure ESLint](#configure-eslint)
+8. [Setup Main and Routes](#setup-main-and-routes)
+9. [Setup Authentication (OAuth2), User Profile, and Vuex](#setup-authentication-user-profile-and-vuex)
+10. [Proxy Api Calls in Webpack Dev Server](#proxy-api-calls-in-webpack-dev-server)
+11. [Components](#components)
+12. [Twitter Bootstrap Configuration](#twitter-bootstrap-configuration)
+13. [Fonts and Font-Awesome](#fonts-and-font-awesome)
+14. [Images and Other Assets](#images-and-other-assets)
+15. [App.scss](#app-scss)
+16. [Unit Testing and End-to-End Testing](#unit-testing-and-end-to-end-testing)
+17. [Run the Dev Server](#run-the-dev-server)
+18. [Vue Dev Tools](#vue-dev-tools)
 
 ## Todo
 
@@ -145,10 +146,13 @@ Add the [ProvidePlugin](https://webpack.github.io/docs/list-of-plugins.html#prov
       jquery: 'jquery',
       'window.jQuery': 'jquery',
       jQuery: 'jquery',
-      '_': 'lodash'
+      '_': 'lodash',
+      utils: 'utils'
     })
   ]
 ```
+
+*Note: The `utils` property is for a set of utility functions we want global to all modules. See the section [Global Utilities](#global-utilities) for more information on how this is set up.*
 
 #### Option #2: Use Expose Loader module for webpack
 
@@ -165,6 +169,61 @@ import 'expose?$!expose?jQuery!jquery'
 
 // ...
 ```
+## Global Utilities
+
+Using the `ProvidePlugin` in the previous section, we were able to include jQuery and Lodash in all modules that used it. But these were from node_modules. What if we want to do this with one of our own modules from our project. In the previous section you can see we added `utils` to the ProvidePlugin. Now let's actually create a module (in the Node form) in our `src/` directory for keeping these utilities we want globally:
+
+#### src/utils.js
+
+```js
+
+module.exports = {
+
+  /**
+   * A simple example to handle the error from a response.
+   *
+   * @param {Object} context The Vue component with an error data property we can set.
+   * @param {Response} response The Vue-resource Response that we will try to get errors from.
+   */
+  handleError: function (context, response) {
+    if (context.hasOwnProperty('error') && response.body.hasOwnProperty('error_description')) {
+      context.error = response.body.error_description
+    }
+  }
+}
+
+``` 
+
+In the section [Configure ESLint](#configure-eslint) you will notice we have added **utils** to the globals so that the linter will not complain when we use it. 
+
+For the `helpers` to work in the ProvidePlugin, we need an alias set up. Let's add it to the set of aliases in `webpack.base.conf.js`:
+
+#### build/webpack.base.conf.js
+
+```js
+
+module.exports = {
+  
+  // ...
+  
+  resolve: {
+    extensions: ['', '.js', '.vue'],
+    fallback: [path.join(__dirname, '../node_modules')],
+    alias: {
+      'vue': 'vue/dist/vue',
+      'src': path.resolve(__dirname, '../src'),
+      'assets': path.resolve(__dirname, '../src/assets'),
+      'components': path.resolve(__dirname, '../src/components'),
+      // alias so we can use the ProvidePlugin to make utils available to each module using them
+      'utils': path.resolve(__dirname, '../src/utils')
+    }
+  },
+
+  // ...
+  
+ }
+```
+Take a look in the `Login.vue` component to see how we use this utility to display an error message (when login credentials are invalid).
 
 ## Configure Sublime Text 3
 
@@ -210,6 +269,8 @@ For example, here's how you can install the **Oceanic Next** theme:
  * Restart Sublime.
 
 ## Configure ESLint
+
+Let's configure eslint. You'll need to restart Sublime each time you makes changes to this file. One thing to point out is the `env` and `globals` properties. These are necessary so eslint doesn't complain about use of these globals in our JS files (and so we don't have to add something like `/* globals localStorage */` to the top of those files to suppress the errors). See other sections in this tutorial, [Configure JQuery](#configure-jquery) and [Global Helpers](#global-helpers) for information about working in a global context in Webpack.
 
 #### eslintrc.js
 

@@ -19,7 +19,9 @@ module.exports = {
       'vue': 'vue/dist/vue',
       'src': path.resolve(__dirname, '../src'),
       'assets': path.resolve(__dirname, '../src/assets'),
-      'components': path.resolve(__dirname, '../src/components')
+      'components': path.resolve(__dirname, '../src/components'),
+      // alias so we can use the ProvidePlugin to make utils available to each module using them
+      'utils': path.resolve(__dirname, '../src/utils')
     }
   },
   resolveLoader: {

@@ -9,6 +9,17 @@ module.exports = {
   plugins: [
     'html'
   ],
+  // This will allow us to use browser context stuff like localStorage 
+  // without eslint complaining.
+  env: {
+    browser: true
+  },
+  // More globals we don't want eslint to complain about in our js files.
+  globals: {
+    '$': true,
+    '_': true,
+    'utils': true
+  }, 
   // add your custom rules here
   'rules': {
     // allow debugger during development

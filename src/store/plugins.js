@@ -1,4 +1,3 @@
-/* globals localStorage */
 import { STORAGE_KEY } from './state'
 
 const localStoragePlugin = store => {
