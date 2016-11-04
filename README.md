@@ -136,6 +136,8 @@ $ npm install sass-loader node-sass --save-dev
 
 Add the [ProvidePlugin](https://webpack.github.io/docs/list-of-plugins.html#provideplugin) to the plugins array in both `build/webpack.dev.conf.js` and `build/webpack.prod.conf.js` so that jQuery and Lodash become globally available to all your modules:
 
+#### build/webpack.dev.conf.js, build/webpack.prod.conf.js
+
 ```js
   plugins: [
     
@@ -222,7 +224,29 @@ module.exports = {
   // ...
   
  }
+
 ```
+
+So we use the `utils` alias in the plugin:
+
+#### build/webpack.dev.conf.js, build/webpack.prod.conf.js
+
+```js
+  plugins: [
+    
+    // ...
+      
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jquery: 'jquery',
+      'window.jQuery': 'jquery',
+      jQuery: 'jquery',
+      '_': 'lodash',
+      utils: 'utils'
+    })
+  ]
+```
+
 Take a look in the `Login.vue` component to see how we use this utility to display an error message (when login credentials are invalid).
 
 ## Configure Sublime Text 3
