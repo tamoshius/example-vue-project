@@ -196,7 +196,7 @@ module.exports = {
 
 In the section [Configure ESLint](#configure-eslint) you will notice we have added **utils** to the globals so that the linter will not complain when we use it. 
 
-For the `helpers` to work in the ProvidePlugin, we need an alias set up. Let's add it to the set of aliases in `webpack.base.conf.js`:
+For the `utils` to work in the ProvidePlugin you could just require it directly, but it gives a warning and build fails (because it's an expression). So let's work around this by adding it to the set of aliases in `webpack.base.conf.js`:
 
 #### build/webpack.base.conf.js
 
