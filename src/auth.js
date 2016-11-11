@@ -24,6 +24,10 @@ export default {
   REFRESH_TOKEN_URL: 'auth',
 
   /**
+   * TODO: This is here temporarily because we are using an OAuth server and backend we don't own in this example.
+   * Ultimately you want your real project backend take the request and add the client secret on the server-side
+   * and forward the request onto an OAuth server. Your backend acts as a middle-man in the process, which
+   * is better for situations like ddos attacks and so on.
    *
    * @var{string} CLIENT_SECRET Base64(client_id:client_secret) "demoapp:demopass"
    */
