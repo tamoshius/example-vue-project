@@ -26,6 +26,6 @@ new Vue({
   render: h => h(App)
 }).$mount('#app')
 
-/* Auth initialize */
+/* Auth plugin */
 import Auth from './auth'
-Auth.initialize()
+Vue.use(Auth)

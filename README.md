@@ -351,9 +351,9 @@ new Vue({
   render: h => h(App)
 }).$mount('#app')
 
-/* Auth initialize */
+/* Auth plugin */
 import Auth from './auth'
-Auth.initialize()
+Vue.use(Auth)
 
 ```
 #### src/routes.js
@@ -573,51 +573,60 @@ Now let's add our auth script. Here we handle getting **OAuth2** access_tokens a
 
 ```js
 import Vue from 'vue'
+import router from './router'
+import store from './store'
 
 /**
-* Auth
+ * @var{string} LOGIN_URL The endpoint for logging in. This endpoint should be proxied by Webpack dev server
+ *    and maybe nginx in production (cleaner calls and avoids CORS issues).
+ */
+const LOGIN_URL = '/auth'
+
+/**
+ * @var{string} REFRESH_TOKEN_URL The endpoint for refreshing an access_token. This endpoint should be proxied
+ *    by Webpack dev server and maybe nginx in production (cleaner calls and avoids CORS issues).
+ */
+const REFRESH_TOKEN_URL = '/auth'
+
+/**
+ * TODO: This is here to demonstrate what an OAuth server will want. Ultimately you want your real project
+ * backend to take the request and add the client secret on the server-side and forward the request
+ * onto an OAuth server. Your backend acts as a middle-man in the process, which is better, for
+ * example in situations like DDoS attacks.
+ *
+ * @var{Object} AUTH_BASIC_HEADERS The options to pass into a Vue-resource http call. Includes
+ *    the headers used for login and token refresh and emulateJSON flag since we are hitting an
+ *    OAuth server directly that can't handle application/json.
+ */
+const AUTH_BASIC_HEADERS = {
+  headers: {
+    'Authorization': 'Basic ZGVtb2FwcDpkZW1vcGFzcw==' // Base64(client_id:client_secret) "demoapp:demopass"
+  },
+  emulateJSON: true
+}
+
+/**
+* Auth Plugin
 *
-* Handle login and token authentication using OAuth2.
+* (see https://vuejs.org/v2/guide/plugins.html for more info on Vue.js plugins)
 *
-* public methods: initialize, login. logout
+* Handles login and token authentication using OAuth2.
 */
 export default {
 
   /**
-   *
-   * @var{string} LOGIN_URL The endpoint for logging in. This endpoint should be proxied by Webpack dev server
-   *    and maybe nginx in production (cleaner calls and avoids CORS issues).
-   */
-  LOGIN_URL: '/auth',
-
-  /**
-   *
-   * @var{string} REFRESH_TOKEN_URL The endpoint for refreshing an access_token. This endpoint should be proxied
-   *    by Webpack dev server and maybe nginx in production (cleaner calls and avoids CORS issues).
-   */
-  REFRESH_TOKEN_URL: 'auth',
-
-  /**
-   * TODO: This is here temporarily because we are using an OAuth server and backend we don't own in this example.
-   * Ultimately you want your real project backend take the request and add the client secret on the server-side
-   * and forward the request onto an OAuth server. Your backend acts as a middle-man in the process, which
-   * is better for situations like ddos attacks and so on.
-   *
-   * @var{string} CLIENT_SECRET Base64(client_id:client_secret) "demoapp:demopass"
-   */
-  CLIENT_SECRET: 'ZGVtb2FwcDpkZW1vcGFzcw==',
-
-  /**
-   * Initializes the Auth class.
+   * Install the Auth class.
    *
    * Creates a Vue-resource http interceptor to handle automatically adding auth headers
-   * and refreshing tokens.
+   * and refreshing tokens. Then attaches this object to the global Vue (as Vue.auth).
    *
+   * @param {Object} Vue The global Vue.
+   * @param {Object} options Any options we want to have in our plugin.
    * @return {void}
    */
-  initialize () {
+  install (Vue, options) {
     Vue.http.interceptors.push((request, next) => {
-      const token = window.vue.$store.state.auth.accessToken
+      const token = store.state.auth.accessToken
       const hasAuthHeader = request.headers.has('Authorization')
 
       if (token && !hasAuthHeader) {
@@ -630,6 +639,8 @@ export default {
         }
       })
     })
+
+    Vue.auth = this
   },
 
   /**
@@ -640,12 +651,14 @@ export default {
    * @return {Promise}
    */
   login (creds, redirect) {
-    return window.vue.$http.post(this.LOGIN_URL, this._getLoginBody(creds), this._getLoginOptions())
+    const params = { 'grant_type': 'password', 'username': creds.username, 'password': creds.password }
+
+    return Vue.http.post(LOGIN_URL, params, AUTH_BASIC_HEADERS)
       .then((response) => {
         this._storeToken(response)
 
         if (redirect) {
-          window.vue.$router.push({ name: redirect })
+          router.push({ name: redirect })
         }
 
         return response
@@ -664,8 +677,8 @@ export default {
    * @return {void}
    */
   logout () {
-    window.vue.$store.commit('CLEAR_ALL_DATA')
-    window.vue.$router.push({ name: 'login' })
+    store.commit('CLEAR_ALL_DATA')
+    router.push({ name: 'login' })
   },
 
   /**
@@ -675,18 +688,23 @@ export default {
    * @return {void}
    */
   setAuthHeader (request) {
-    request.headers.set('Authorization', 'Bearer ' + window.vue.$store.state.auth.accessToken)
+    request.headers.set('Authorization', 'Bearer ' + store.state.auth.accessToken)
     // The demo Oauth2 server we are using requires this param, but normally you only set the header.
-    request.params.access_token = window.vue.$store.state.auth.accessToken
+    request.params.access_token = store.state.auth.accessToken
   },
 
   /**
-   * Retry a request.
+   * Retry the original request.
+   *
+   * Let's retry the user's original target request that had recieved a invalid token response
+   * (which we fixed with a token refresh).
    *
    * @param {Request} request The Vue-resource Request instance to use to repeat an http call.
    * @return {Promise}
    */
   _retry (request) {
+    this.setAuthHeader(request)
+
     return Vue.http(request)
       .then((response) => {
         return response
@@ -706,12 +724,11 @@ export default {
    * @return {Promise}
    */
   _refreshToken (request) {
-    return Vue.http.post(this.REFRESH_TOKEN_URL, this._getRefreshTokenBody(), this._getRefreshTokenOptions())
+    const params = { 'grant_type': 'refresh_token', 'refresh_token': store.state.auth.refreshToken }
+
+    return Vue.http.post(REFRESH_TOKEN_URL, params, AUTH_BASIC_HEADERS)
       .then((result) => {
         this._storeToken(result)
-        this.setAuthHeader(request)
-
-        // Retry the original request
         return this._retry(request)
       })
       .catch((errorResponse) => {
@@ -734,8 +751,8 @@ export default {
    * @return {void}
    */
   _storeToken (response) {
-    const auth = window.vue.$store.state.auth
-    const user = window.vue.$store.state.user
+    const auth = store.state.auth
+    const user = store.state.user
 
     auth.isLoggedIn = true
     auth.accessToken = response.body.access_token
@@ -743,62 +760,8 @@ export default {
     // TODO: get user's name from response from Oauth server.
     user.name = 'John Smith'
 
-    window.vue.$store.commit('UPDATE_AUTH', auth)
-    window.vue.$store.commit('UPDATE_USER', user)
-  },
-
-  /**
-   * Get the login options (including headers) to use in a Vue-resource http call.
-   *
-   * @private
-   * @return {Object}
-   */
-  _getLoginOptions () {
-    return {
-      headers: {
-        'Content-type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + this.CLIENT_SECRET
-      },
-      emulateJSON: true
-    }
-  },
-
-  /**
-   * Get the login body (including username/password) to use in a Vue-resource http call.
-   *
-   * @private
-   * @return {Object}
-   */
-  _getLoginBody (creds) {
-    return {
-      'grant_type': 'password',
-      'username': creds.username,
-      'password': creds.password
-    }
-  },
-
-  /**
-   * Get the refresh token options to use in a Vue-resource http call.
-   *
-   * @private
-   * @return {Object}
-   */
-  _getRefreshTokenOptions () {
-    // same as login options
-    return this._getLoginOptions()
-  },
-
-  /**
-   * Get the refresh token body to use in a Vue-resource http call.
-   *
-   * @private
-   * @return {Object}
-   */
-  _getRefreshTokenBody () {
-    return {
-      'grant_type': 'refresh_token',
-      'refresh_token': window.vue.$store.state.auth.refreshToken
-    }
+    store.commit('UPDATE_AUTH', auth)
+    store.commit('UPDATE_USER', user)
   },
 
   /**

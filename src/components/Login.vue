@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import Auth from '../auth'
+import Vue from 'vue'
 import PageTitle from './PageTitle.vue'
 
 export default {
@@ -60,11 +60,10 @@ export default {
         username: this.credentials.username,
         password: this.credentials.password
       }
-
       // Auth.login() returns a promise. A redirect will happen on success.
       // For errors, use .then() to capture the response to output
       // error_description (if exists) as shown below:
-      Auth.login(credentials, 'dashboard').then((response) => {
+      Vue.auth.login(credentials, 'dashboard').then((response) => {
         utils.handleError(this, response)
       })
     }
